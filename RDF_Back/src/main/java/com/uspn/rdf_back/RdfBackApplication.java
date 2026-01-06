@@ -14,7 +14,7 @@ public class RdfBackApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(RdfBackApplication.class, args);
-
+        Example.example();
     }
 
 }
