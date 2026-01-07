@@ -1,0 +1,17 @@
+
+<http://example.org/rico/resource_f4791105-6052-4bab-824a-06affd91394a> a <https://www.ica.org/standards/RiC/ontology#Person>;
+  <https://www.ica.org/standards/RiC/ontology#name> "Bob";
+  <https://www.ica.org/standards/RiC/ontology#email> "bob@example.com";
+  <https://www.ica.org/standards/RiC/ontology#age> "31" .
+
+<http://example.org/rico/resource_5f447c3d-a8e4-417b-8331-a8d5182878be> a <https://www.ica.org/standards/RiC/ontology#Record>;
+  <https://www.ica.org/standards/RiC/ontology#date> "2025-06-09";
+  <https://www.ica.org/standards/RiC/ontology#Status> "Validé";
+  <https://www.ica.org/standards/RiC/ontology#description> "Contrat entre la société ABC XYZ";
+  <https://www.ica.org/standards/RiC/ontology#title> "Contrat de vente" .
+
+<http://example.org/rico/resource_5f20242c-885c-4817-944a-089c06935807> a <https://www.ica.org/standards/RiC/ontology#Person>;
+  <https://www.ica.org/standards/RiC/ontology#Role> "Directeur Comercial";
+  <https://www.ica.org/standards/RiC/ontology#phone> "+33 6 78 98 09 76";
+  <https://www.ica.org/standards/RiC/ontology#name> "Jean Dupont";
+  <https://www.ica.org/standards/RiC/ontology#email> "Jean.Dupont@gmail.com" .
