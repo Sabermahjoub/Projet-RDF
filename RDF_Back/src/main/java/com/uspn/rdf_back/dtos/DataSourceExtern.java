@@ -16,8 +16,8 @@ public class DataSourceExtern {
     private String url;
     private String name;
     private String description;
-    private String projectName;
-
+    //private String projectName;
+    private String subGraphName;
     private LocalDate creationDate;
     private LocalDate lastSynchDate;
 
