@@ -1,1 +1,649 @@
-<p>gestion-ressources works!</p>
+<div class="flex flex-col h-screen bg-gray-50">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-blue-900 to-blue-600 shadow-lg">
+    <div class="flex items-center justify-between px-6 py-4">
+      <!-- Left: Logo and Title -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-center justify-center w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl hover:bg-white/30 transition-all duration-300 cursor-pointer">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2L2 7l10 5 10-5-10-5z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 17l10 5 10-5"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12l10 5 10-5"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white tracking-tight">Gestionnaire RDF - RIC-O</h1>
+          <p class="text-xs text-blue-100">Système de gestion des données archivistiques</p>
+        </div>
+      </div>
+
+      <!-- Right: View Tabs -->
+      <nav class="flex gap-1 bg-white/10 backdrop-blur-md p-1 rounded-lg" role="tablist">
+        <button (click)="setView('tableau')" [class.bg-white]="activeView === 'tableau'" [class.text-blue-600]="activeView === 'tableau'" [class.shadow-sm]="activeView === 'tableau'" class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/20" role="tab" [attr.aria-selected]="activeView === 'tableau'" aria-label="Vue Tableau">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" stroke-width="2"></rect>
+            <rect x="14" y="3" width="7" height="7" stroke-width="2"></rect>
+            <rect x="14" y="14" width="7" height="7" stroke-width="2"></rect>
+            <rect x="3" y="14" width="7" height="7" stroke-width="2"></rect>
+          </svg>
+          <span>Vue Tableau</span>
+        </button>
+        
+        <button (click)="setView('graphe')" [class.bg-white]="activeView === 'graphe'" [class.text-blue-600]="activeView === 'graphe'" [class.shadow-sm]="activeView === 'graphe'" class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/20" role="tab" [attr.aria-selected]="activeView === 'graphe'" aria-label="Vue Graphe">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="18" cy="5" r="3" stroke-width="2"></circle>
+            <circle cx="6" cy="12" r="3" stroke-width="2"></circle>
+            <circle cx="18" cy="19" r="3" stroke-width="2"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" stroke-width="2"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" stroke-width="2"></line>
+          </svg>
+          <span>Vue Graphe</span>
+        </button>
+        
+        <button (click)="setView('sources')" [class.bg-white]="activeView === 'sources'" [class.text-blue-600]="activeView === 'sources'" [class.shadow-sm]="activeView === 'sources'" class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/20" role="tab" [attr.aria-selected]="activeView === 'sources'" aria-label="Vue Sources">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <span>Sources</span>
+        </button>
+        
+        <button (click)="setView('sparql')" [class.bg-white]="activeView === 'sparql'" [class.text-blue-600]="activeView === 'sparql'" [class.shadow-sm]="activeView === 'sparql'" class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/20" role="tab" [attr.aria-selected]="activeView === 'sparql'" aria-label="Vue SPARQL">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <polyline points="16 18 22 12 16 6" stroke-width="2"></polyline>
+            <polyline points="8 6 2 12 8 18" stroke-width="2"></polyline>
+          </svg>
+          <span>SPARQL</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <div class="flex flex-1 overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-60 bg-white border-r border-gray-200 overflow-y-auto shadow-sm">
+      <div class="p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">All RDF dictionaries types</h2>
+          <span class="text-xs text-gray-400 font-medium">{{ getTotalCount() }}</span>
+        </div>
+        
+        <mat-accordion class="flex flex-col m-3! w-full!">
+          <mat-expansion-panel class="w-[90%]! bg-gray-200!" (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
+            <mat-expansion-panel-header>
+              <mat-panel-title> RIC-O </mat-panel-title>
+              <mat-panel-description>
+                ...
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            <div class="space-y-1">
+              <mat-list class="flex flex-col w-full h-full items-center justify-center">
+                <button *ngFor="let entityType of filteredEntityTypes" (click)="filterByType(entityType.type)" [class.bg-blue-50]="selectedType === entityType.type" [class.border-blue-500]="selectedType === entityType.type" [class.text-blue-700]="selectedType === entityType.type" class="w-full! flex flex-col items-center justify-between px-3 py-2.5 text-sm rounded-lg hover:bg-gray-50 transition-colors duration-150 border border-transparent group" [attr.aria-pressed]="selectedType === entityType.type">
+                  <div class="items-center">
+                    <mat-list-item class="w-full font-medium">{{ entityType.name }}</mat-list-item>
+                  </div>
+                  <mat-divider class="w-full" ></mat-divider>
+                </button>
+              </mat-list>
+            </div>
+
+
+          </mat-expansion-panel>
+          
+        </mat-accordion>
+
+
+        <!-- No results message for type search -->
+        <div *ngIf="typeSearchQuery && filteredEntityTypes.length === 0" class="text-center py-8">
+          <svg class="mx-auto h-8 w-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <p class="mt-2 text-xs text-gray-500">Aucun type trouvé</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto bg-gray-50">
+      <div class="p-6">
+        <!-- Stats Bar -->
+        <div class="mb-4 flex items-center gap-4">
+          <div class="flex items-center gap-2 text-sm text-gray-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span><strong>{{ filteredEntities.length }}</strong> résultat(s)</span>
+          </div>
+
+          <!-- Active Filter Badge -->
+          <div *ngIf="selectedType" class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium animate-fade-in">
+            <span>Filtre: {{ selectedType }}</span>
+            <button (click)="clearTypeFilter()" class="hover:bg-blue-200 rounded-full p-0.5 transition-colors" aria-label="Effacer le filtre">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Search and Actions Bar -->
+        <div class="flex items-center gap-3 mb-6">
+          <div class="flex-1 relative">
+            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()" placeholder="Rechercher par titre, date ou source..." class="text-center w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-gray-400 transition-all" aria-label="Rechercher des entités">
+            <button *ngIf="searchQuery" (click)="clearSearch()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors" aria-label="Effacer la recherche">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button (click)="toggleSortOrder()" class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors group" [attr.aria-label]="sortAscending ? 'Trier par ordre décroissant' : 'Trier par ordre croissant'">
+              <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-800 transition-transform" [class.rotate-180]="!sortAscending" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path>
+              </svg>
+            </button>
+
+            <button class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" aria-label="Filtres avancés">
+              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+              </svg>
+            </button>
+
+            <button (click)="exportData()" class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" aria-label="Exporter les données">
+              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
+            </button>
+          </div>
+
+          <button (click)="addNewPerson()" class="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all text-sm font-medium shadow-sm hover:shadow-md transform hover:scale-105 duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <span>Nouveau Person</span>
+          </button>
+        </div>
+
+        <!-- Table View -->
+        <div *ngIf="activeView === 'tableau'" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th (click)="sortBy('titre')" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                    <div class="flex items-center gap-2">
+                      <span>Titre</span>
+                      <svg *ngIf="sortColumn === 'titre'" class="w-4 h-4" [class.rotate-180]="!sortAscending" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                      </svg>
+                    </div>
+                  </th>
+                  <th (click)="sortBy('date')" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                    <div class="flex items-center gap-2">
+                      <span>Date</span>
+                      <svg *ngIf="sortColumn === 'date'" class="w-4 h-4" [class.rotate-180]="!sortAscending" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                      </svg>
+                    </div>
+                  </th>
+                  <th (click)="sortBy('source')" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                    <div class="flex items-center gap-2">
+                      <span>Source</span>
+                      <svg *ngIf="sortColumn === 'source'" class="w-4 h-4" [class.rotate-180]="!sortAscending" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                      </svg>
+                    </div>
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Statut</th>
+                  <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <tr *ngFor="let entity of filteredEntities; trackBy: trackByEntityId" (click)="selectEntity(entity)" [class.bg-blue-50]="selectedEntity?.id === entity.id" class="hover:bg-gray-50 cursor-pointer transition-colors group">
+                  <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getIconPathForType(entity.type)"></path>
+                      </svg>
+                      {{ entity.titre }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-600">{{ entity.date }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-600">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                      {{ entity.source }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-600">{{ entity.type }}</td>
+                  <td class="px-6 py-4">
+                    <span [class.bg-green-100]="entity.statut === 'complet'" [class.text-green-700]="entity.statut === 'complet'" [class.bg-amber-100]="entity.statut === 'partiel'" [class.text-amber-700]="entity.statut === 'partiel'" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <circle cx="10" cy="10" r="4"></circle>
+                      </svg>
+                      {{ entity.statut }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <button (click)="editEntity(entity, $event)" class="text-blue-600 hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Modifier">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="filteredEntities.length === 0" class="py-16 text-center">
+            <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3 class="mt-4 text-sm font-medium text-gray-900">Aucun résultat trouvé</h3>
+            <p class="mt-2 text-sm text-gray-500">Essayez de modifier vos critères de recherche ou de supprimer les filtres.</p>
+            <button *ngIf="selectedType || searchQuery" (click)="clearAllFilters()" class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+              Effacer tous les filtres
+            </button>
+          </div>
+        </div>
+
+        <!-- Placeholder for other views -->
+        <div *ngIf="activeView !== 'tableau'" class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+          </svg>
+          <h3 class="mt-4 text-lg font-medium text-gray-900">Vue {{ activeView }} en développement</h3>
+          <p class="mt-2 text-sm text-gray-500">Cette fonctionnalité sera bientôt disponible.</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Detail Panel -->
+    <aside *ngIf="selectedEntity" [@slideIn] class="w-96 bg-white border-l border-gray-200 overflow-y-auto shadow-xl">
+      <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+        <div class="flex items-center gap-3">
+          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getIconPathForType(selectedEntity.type)"></path>
+          </svg>
+          <h2 class="text-lg font-semibold text-gray-900">{{ selectedEntity?.titre }}</h2>
+        </div>
+        <button (click)="closeDetail()" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Fermer">
+          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6">
+        <!-- Tabs -->
+        <div class="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg">
+          <button (click)="detailTab = 'ric'" [class.bg-white]="detailTab === 'ric'" [class.text-gray-900]="detailTab === 'ric'" [class.shadow-sm]="detailTab === 'ric'" class="flex-1 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-md transition-colors">RIC</button>
+          <button (click)="detailTab = 'foaf'" [class.bg-white]="detailTab === 'foaf'" [class.text-gray-900]="detailTab === 'foaf'" [class.shadow-sm]="detailTab === 'foaf'" class="flex-1 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-md transition-colors">FOAF</button>
+          <button (click)="detailTab = 'metadata'" [class.bg-white]="detailTab === 'metadata'" [class.text-gray-900]="detailTab === 'metadata'" [class.shadow-sm]="detailTab === 'metadata'" class="flex-1 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-md transition-colors">Metadata</button>
+        </div>
+
+        <!-- RIC Tab Content -->
+        <div class="flex flex-col gap-5! p-3!" *ngIf="detailTab === 'ric'">
+
+          <!-- ID Field -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">ID</label>
+            <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+              <span class="text-sm text-gray-600 font-mono">{{ selectedEntity?.id }}</span>
+              <button (click)="copyToClipboard(selectedEntity?.id)" class="text-gray-400 hover:text-gray-600 transition-colors" aria-label="Copier l'ID">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Name Field -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Name
+              <button class="inline ml-1 text-gray-400 hover:text-gray-600" aria-label="Information">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </button>
+            </label>
+            <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+              <input
+                *ngIf="selectedEntity"
+                type="text"
+                [(ngModel)]="selectedEntity.titre"
+                
+                class="text-sm text-gray-900 font-medium w-full bg-transparent focus:outline-none"
+              />
+              <button class="text-gray-400 hover:text-gray-600 transition-colors" aria-label="Supprimer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Birth Date -->
+          <div *ngIf="selectedEntity?.birthDate" class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Birth Date
+              <button class="inline ml-1 text-gray-400 hover:text-gray-600" aria-label="Information">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </button>
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="text" [value]="selectedEntity?.birthDate" readonly class="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900">
+              <button class="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Sélectionner une date">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </button>
+              <button class="text-gray-400 hover:text-gray-600 transition-colors" aria-label="Supprimer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Death Date -->
+          <div *ngIf="selectedEntity?.deathDate" class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Death Date
+              <button class="inline ml-1 text-gray-400 hover:text-gray-600" aria-label="Information">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </button>
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="text" [value]="selectedEntity?.deathDate" readonly class="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900">
+              <button class="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Sélectionner une date">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </button>
+              <button class="text-gray-400 hover:text-gray-600 transition-colors" aria-label="Supprimer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Associated With -->
+          <div *ngIf="selectedEntity?.associatedWith && selectedEntity.associatedWith!.length > 0" class="mb-6 flex flex-col gap-2!">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Associated With ({{ selectedEntity.associatedWith!.length }})
+              <button class="inline ml-1 text-gray-400 hover:text-gray-600" aria-label="Information">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </button>
+            </label>
+            <div class="space-y-2 flex flex-col gap-2!">
+              <div *ngFor="let person of selectedEntity.associatedWith" class="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg group hover:bg-blue-100 transition-colors">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                  <span class="text-sm text-blue-700 font-medium">{{ person }}</span>
+                </div>
+                <button (click)="removeAssociation(person)" class="text-blue-400 hover:text-blue-600 transition-colors" aria-label="Supprimer l'association">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <button (click)="addAssociation()" class="mt-2 flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              Ajouter une association
+            </button>
+          </div>
+        </div>
+
+        <!-- FOAF Tab Content -->
+        <div *ngIf="detailTab === 'foaf'" class="text-center py-12">
+          <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <p class="mt-4 text-sm text-gray-500">Données FOAF à venir</p>
+        </div>
+
+        <!-- Metadata Tab Content -->
+        <div *ngIf="detailTab === 'metadata'" class="text-center p-12!">
+          <div class="space-y-4">
+            <div>
+              <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</span>
+              <p class="mt-1 text-sm text-gray-900">{{ selectedEntity?.type }}</p>
+            </div>
+            <div>
+              <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Source</span>
+              <p class="mt-1 text-sm text-gray-900">{{ selectedEntity?.source }}</p>
+            </div>
+            <div>
+              <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</span>
+              <p class="mt-1 text-sm text-gray-900">{{ selectedEntity?.statut }}</p>
+            </div>
+            <div>
+              <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</span>
+              <p class="mt-1 text-sm text-gray-900">{{ selectedEntity?.date }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-8 flex gap-3">
+          <button (click)="saveEntity()" class="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm">
+            Enregistrer
+          </button>
+          <button (click)="deleteEntity()" class="px-4 py-2.5 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium">
+            Supprimer
+          </button>
+        </div>
+      </div>
+
+      <!-- Floating Help Button -->
+      <button class="fixed bottom-6 right-6 w-12 h-12 bg-gray-900 hover:bg-gray-800 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110" aria-label="Aide">
+        <span class="text-xl font-light">?</span>
+      </button>
+    </aside>
+  </div>
+
+  <!-- Modal de création de nouvelle personne -->
+  <div *ngIf="showPersonForm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+      <!-- Header -->
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+          <h2 class="text-lg font-semibold text-gray-900">Nouvelle Personne</h2>
+        </div>
+        <button (click)="cancelNewPerson()" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Fermer">
+          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Formulaire -->
+      <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+        <form [formGroup]="personForm" (ngSubmit)="saveNewPerson()" class="space-y-6">
+          
+          <!-- Champs principaux -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Titre -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Titre *
+              </label>
+              <input type="text" formControlName="titre" placeholder="Nom complet" 
+                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
+                     [class.border-red-300]="personForm.get('titre')?.invalid && personForm.get('titre')?.touched">
+              <div *ngIf="personForm.get('titre')?.invalid && personForm.get('titre')?.touched" class="mt-1 text-xs text-red-600">
+                Le titre est requis
+              </div>
+            </div>
+
+            <!-- Date -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Date *
+              </label>
+              <input type="date" formControlName="date"
+                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
+                     [class.border-red-300]="personForm.get('date')?.invalid && personForm.get('date')?.touched">
+              <div *ngIf="personForm.get('date')?.invalid && personForm.get('date')?.touched" class="mt-1 text-xs text-red-600">
+                La date est requise
+              </div>
+            </div>
+          </div>
+
+          <!-- Source et Statut -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Source -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Source *
+              </label>
+              <select formControlName="source"
+                      class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
+                <option value="">Sélectionner une source</option>
+                <option value="Manuel">Manuel</option>
+                <option value="Automatique">Automatique</option>
+                <option value="Archives scientifiques">Archives scientifiques</option>
+                <option value="Archives institutionnelles">Archives institutionnelles</option>
+                <option value="Bibliothèque nationale">Bibliothèque nationale</option>
+              </select>
+            </div>
+
+            <!-- Statut -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Statut *
+              </label>
+              <select formControlName="statut"
+                      class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
+                <option value="">Sélectionner un statut</option>
+                <option value="complet">Complet</option>
+                <option value="partiel">Partiel</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Dates de naissance et décès -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Date de naissance -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Date de naissance
+              </label>
+              <input type="date" formControlName="birthDate"
+                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
+            </div>
+
+            <!-- Date de décès -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Date de décès
+              </label>
+              <input type="date" formControlName="deathDate"
+                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
+            </div>
+          </div>
+
+          <!-- Associations -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <label class="block text-sm font-medium text-gray-700">
+                Associations
+              </label>
+              <button type="button" (click)="addAssociationField()" 
+                      class="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Ajouter une association
+              </button>
+            </div>
+            
+            <div formArrayName="associatedWith" class="space-y-3">
+              <div *ngFor="let association of associatedWithArray.controls; let i = index" class="flex items-center gap-2">
+                <input type="text" [formControlName]="i" placeholder="Nom de la personne associée"
+                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
+                <button type="button" (click)="removeAssociationField(i)"
+                        class="p-2 text-gray-400 hover:text-red-600 transition-colors" aria-label="Supprimer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Champs personnalisés -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <label class="block text-sm font-medium text-gray-700">
+                Champs personnalisés
+              </label>
+              <button type="button" (click)="addCustomField()" 
+                      class="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Ajouter un champ
+              </button>
+            </div>
+            
+            <div formArrayName="customFields" class="space-y-3">
+              <div *ngFor="let fieldGroup of customFieldsArray.controls; let i = index" 
+                   [formGroupName]="i" class="grid grid-cols-12 gap-2">
+                <input type="text" formControlName="name" placeholder="Nom du champ"
+                       class="col-span-5 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
+                <span class="col-span-1 text-center text-gray-400">=</span>
+                <input type="text" formControlName="value" placeholder="Valeur"
+                       class="col-span-5 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
+                <button type="button" (click)="removeCustomField(i)"
+                        class="col-span-1 p-2 text-gray-400 hover:text-red-600 transition-colors" aria-label="Supprimer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+            <button type="button" (click)="cancelNewPerson()"
+                    class="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+              Annuler
+            </button>
+            <button type="submit" [disabled]="personForm.invalid"
+                    class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+              Créer la personne
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

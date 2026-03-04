@@ -6,7 +6,7 @@ import { GestionRessourcesComponent } from './components/gestion-ressources/gest
 export const routes: Route[] = [
   {
     path: '',
-    redirectTo: '/gestion-projets', // Start with projects view
+    redirectTo: '/gestion-projets',
     pathMatch: 'full'
   },
   {
