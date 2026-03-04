@@ -1,1 +1,282 @@
-<p>gestion-sources works!</p>
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <h1 class="title">Data Source Management</h1>
+      <p class="subtitle">Manage RDF data sources and named graphs for your project</p>
+    </div>
+    <button 
+      mat-raised-button 
+      color="primary" 
+      class="create-btn"
+      (click)="openCreateForm()"
+      *ngIf="!showForm">
+      <mat-icon>add</mat-icon>
+      New Data Source
+    </button>
+  </div>
+
+  <!-- Create/Edit Form -->
+  <div class="form-container" *ngIf="showForm">
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>
+          {{ isEditing ? 'Edit Data Source' : 'Create New Data Source' }}
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <form [formGroup]="dataSourceForm" (ngSubmit)="onSubmit()">
+          <div class="form-grid">
+            <!-- Source Type -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Source Type</mat-label>
+              <mat-select formControlName="sourceType">
+                <mat-option value="INTERNAL">Internal (Editable in this app)</mat-option>
+                <mat-option value="EXTERNAL">External (Read-only, imported from other tools)</mat-option>
+              </mat-select>
+              <mat-icon matPrefix>category</mat-icon>
+              <mat-hint>Internal sources are editable. External sources are read-only.</mat-hint>
+            </mat-form-field>
+
+            <!-- Short Name (Used for Named Graph) -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Short Name (Named Graph ID)</mat-label>
+              <input 
+                matInput 
+                formControlName="shortName" 
+                placeholder="e.g., lameta-recordings"
+                [readonly]="isEditing">
+              <mat-icon matPrefix>tag</mat-icon>
+              <mat-hint>This creates the named graph: urn:datasource:{{dataSourceForm.get('shortName')?.value || 'your-name'}}</mat-hint>
+              <mat-error *ngIf="dataSourceForm.get('shortName')?.hasError('required')">
+                Short name is required
+              </mat-error>
+              <mat-error *ngIf="dataSourceForm.get('shortName')?.hasError('pattern')">
+                Only letters, numbers, dashes and underscores allowed
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Name -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Display Name</mat-label>
+              <input 
+                matInput 
+                formControlName="name" 
+                placeholder="e.g., Lameta Audio Recordings">
+              <mat-icon matPrefix>title</mat-icon>
+              <mat-error *ngIf="dataSourceForm.get('name')?.hasError('required')">
+                Name is required
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Description -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Description</mat-label>
+              <textarea 
+                matInput 
+                formControlName="description" 
+                rows="3"
+                placeholder="Describe the content of this data source..."></textarea>
+              <mat-icon matPrefix>description</mat-icon>
+            </mat-form-field>
+
+            <!-- External Source Fields -->
+            <div class="external-fields" *ngIf="isExternal()">
+              <h3 class="section-title">
+                <mat-icon>cloud_download</mat-icon>
+                External Source Configuration
+              </h3>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Origin Tool/System</mat-label>
+                <mat-select formControlName="tool">
+                  <mat-option value="">None</mat-option>
+                  <mat-option value="Tropy">Tropy (Photo management)</mat-option>
+                  <mat-option value="Lameta">Lameta (Audio/Video recordings)</mat-option>
+                  <mat-option value="Gramps">Gramps (Genealogy data)</mat-option>
+                  <mat-option value="Other">Other RDF source</mat-option>
+                </mat-select>
+                <mat-icon matPrefix>build</mat-icon>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>RDF File URL or Path</mat-label>
+                <input 
+                  matInput 
+                  formControlName="url" 
+                  placeholder="file:///path/to/data.ttl or https://example.com/data.rdf">
+                <mat-icon matPrefix>link</mat-icon>
+                <mat-hint>Path to the RDF file to import</mat-hint>
+              </mat-form-field>
+
+              <div class="info-box">
+                <mat-icon>info</mat-icon>
+                <div>
+                  <strong>Note:</strong> External data sources are read-only. 
+                  To modify this data, edit it in the original tool ({{ dataSourceForm.get('tool')?.value || 'the source application' }}) 
+                  and re-import using the "Re-import" button.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button 
+              mat-button 
+              type="button" 
+              (click)="cancelForm()">
+              Cancel
+            </button>
+            <button 
+              mat-raised-button 
+              color="primary" 
+              type="submit"
+              [disabled]="!dataSourceForm.valid">
+              <mat-icon>{{ isEditing ? 'save' : 'add' }}</mat-icon>
+              {{ isEditing ? 'Update' : 'Create' }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Data Sources List -->
+  <div class="list-container">
+    <mat-card class="list-card" *ngIf="dataSources.length > 0">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>storage</mat-icon>
+          Data Sources & Named Graphs ({{ dataSources.length }})
+        </mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div class="sources-grid">
+          <div 
+            class="source-item" 
+            *ngFor="let source of dataSources"
+            [class.external]="source.sourceType === 'EXTERNAL'"
+            [class.readonly]="!source.editable">
+            
+            <div class="source-header">
+              <div class="source-info">
+                <h3 class="source-name">{{ source.name }}</h3>
+                <div class="source-ids">
+                  <span class="source-id">{{ source.shortName }}</span>
+                  <span class="graph-iri" *ngIf="source.graphIRI">
+                    <mat-icon>share</mat-icon>
+                    {{ source.graphIRI }}
+                  </span>
+                </div>
+              </div>
+              <div class="badges">
+                <mat-chip 
+                  [class.chip-internal]="source.sourceType === 'INTERNAL'"
+                  [class.chip-external]="source.sourceType === 'EXTERNAL'">
+                  {{ source.sourceType }}
+                </mat-chip>
+                <mat-chip 
+                  *ngIf="source.editable === false"
+                  class="chip-readonly">
+                  <mat-icon>lock</mat-icon>
+                  READ-ONLY
+                </mat-chip>
+              </div>
+            </div>
+
+            <p class="source-description" *ngIf="source.description">
+              {{ source.description }}
+            </p>
+
+            <!-- Statistics -->
+            <div class="source-stats" *ngIf="source.recordCount">
+              <div class="stat-item">
+                <mat-icon>description</mat-icon>
+                <span>{{ source.recordCount }} records</span>
+              </div>
+            </div>
+
+            <!-- External Source Metadata -->
+            <div class="source-meta" *ngIf="source.sourceType === 'EXTERNAL'">
+              <span *ngIf="source.tool" class="meta-item">
+                <mat-icon>build</mat-icon>
+                Source: {{ source.tool }}
+              </span>
+              <span *ngIf="source.url" class="meta-item url-item">
+                <mat-icon>link</mat-icon>
+                <span class="url-text" [title]="source.url">{{ source.url }}</span>
+              </span>
+              <span *ngIf="source.lastSyncDate" class="meta-item">
+                <mat-icon>update</mat-icon>
+                Last import: {{ source.lastSyncDate | date:'short' }}
+              </span>
+            </div>
+
+            <!-- Import History -->
+            <div class="import-history" *ngIf="source.previousImportDates && source.previousImportDates.length > 0">
+              <button 
+                mat-button 
+                class="history-toggle"
+                (click)="toggleHistory(source.id!)">
+                <mat-icon>history</mat-icon>
+                Import History ({{ source.previousImportDates.length }})
+              </button>
+              <div class="history-list" *ngIf="expandedHistory === source.id">
+                <div *ngFor="let date of source.previousImportDates" class="history-item">
+                  <mat-icon>schedule</mat-icon>
+                  {{ date | date:'medium' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="source-actions">
+              <button 
+                mat-icon-button 
+                color="primary"
+                (click)="openEditForm(source)"
+                [disabled]="source.editable === false"
+                [matTooltip]="source.editable === false ? 'Cannot edit external sources' : 'Edit metadata'">
+                <mat-icon>edit</mat-icon>
+              </button>
+              
+              <button 
+                mat-icon-button 
+                color="accent"
+                *ngIf="source.sourceType === 'EXTERNAL'"
+                (click)="reimportSource(source)"
+                matTooltip="Re-import from RDF file">
+                <mat-icon>cloud_download</mat-icon>
+              </button>
+              
+              <button 
+                mat-icon-button 
+                color="warn"
+                (click)="deleteDataSource(source)"
+                [matTooltip]="'Delete this data source and its named graph'">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="dataSources.length === 0 && !showForm">
+      <mat-icon class="empty-icon">folder_open</mat-icon>
+      <h2>No Data Sources Yet</h2>
+      <p>Create your first data source to start managing RDF metadata in named graphs</p>
+      <button 
+        mat-raised-button 
+        color="primary" 
+        (click)="openCreateForm()">
+        <mat-icon>add</mat-icon>
+        Create Data Source
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,14 +1,24 @@
-import { GestionProjetsComponent } from './components/gestion-projets/gestion-projets.component';
 import { Route } from '@angular/router';
-
+import { GestionProjetsComponent } from './components/gestion-projets/gestion-projets.component';
+import { GestionSourcesComponent } from './components/gestion-sources/gestion-sources.component';
+import { GestionRessourcesComponent } from './components/gestion-ressources/gestion-ressources.component';
 
 export const routes: Route[] = [
   {
-    path: 'GestionProjets',
+    path: '',
+    redirectTo: '/gestion-projets', // Start with projects view
+    pathMatch: 'full'
+  },
+  {
+    path: 'gestion-projets',
     component: GestionProjetsComponent,
-    // canActivate: [AuthGuard],
-    // children: [
-    //   { path: '', redirectTo: '/authentication/signin', pathMatch: 'full' },
-    // ],
+  },
+  {
+    path: 'gestion-sources',
+    component: GestionSourcesComponent,
+  },
+  {
+    path: 'gestion-ressources',
+    component: GestionRessourcesComponent,
   }
 ];
