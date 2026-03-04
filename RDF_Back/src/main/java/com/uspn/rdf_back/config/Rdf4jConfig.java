@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.File;
+//cette classe fournit l’infrastructure de stockage RDF
 
 @Configuration
 public class Rdf4jConfig {

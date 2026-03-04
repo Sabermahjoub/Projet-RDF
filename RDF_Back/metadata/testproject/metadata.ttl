@@ -1,0 +1,13 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <http://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://example.com/project/testproject> a schema:Project;
+  dct:created "2026-01-06"^^xsd:date;
+  dct:description "Test Description";
+  dct:issued "2026-01-06"^^xsd:date;
+  dct:modified "2026-01-06"^^xsd:date;
+  dct:source "http://example.com";
+  dct:title "Test Project" .

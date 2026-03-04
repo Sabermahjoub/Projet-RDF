@@ -1,0 +1,9 @@
+package com.uspn.rdf_back.dtos;
+
+public class RdfPropertyDto {
+    public String predicate;   // ex: "ric:hasName" ou IRI complet
+    public String kind;        // "literal" | "iri"
+    public String value;       // valeur littérale ou IRI/curie
+    public String datatype;    // ex: "xsd:string" (optionnel pour literal)
+    public String lang;        // ex: "fr" (optionnel pour literal)
+}
