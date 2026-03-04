@@ -1,7 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectionStrategy, signal, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { trigger, transition, style, animate } from '@angular/animations';
+
+import {MatExpansionModule} from '@angular/material/expansion';
+import {MatDividerModule} from '@angular/material/divider';
+import {MatListModule} from '@angular/material/list';
 
 interface Entity {
   id: string;
@@ -25,9 +29,16 @@ interface EntityType {
 @Component({
   selector: 'app-gestion-ressources',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, 
+    FormsModule, 
+    ReactiveFormsModule, 
+    MatExpansionModule,
+    MatDividerModule,
+    MatListModule
+  ],
   templateUrl: './gestion-ressources.component.html',
   styleUrl: './gestion-ressources.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('slideIn', [
       transition(':enter', [
@@ -41,6 +52,8 @@ interface EntityType {
   ]
 })
 export class GestionRessourcesComponent implements OnInit {
+  panelOpenState = signal(false);
+
   // Entity Types for Sidebar
   entityTypes: EntityType[] = [
     { name: 'Event', icon: 'calendar', count: 2, type: 'Event' },
@@ -187,6 +200,7 @@ export class GestionRessourcesComponent implements OnInit {
   showPersonForm: boolean = false;
 
   constructor(private fb: FormBuilder) {
+    
     this.personForm = this.fb.group({
       titre: ['', Validators.required],
       date: ['', Validators.required],
@@ -203,6 +217,7 @@ export class GestionRessourcesComponent implements OnInit {
     this.filteredEntities = [...this.allEntities];
     this.filteredEntityTypes = [...this.entityTypes];
     this.updateEntityTypeCounts();
+    this.detailTab = 'ric';
   }
 
   // Getters pour les FormArrays
@@ -330,7 +345,7 @@ export class GestionRessourcesComponent implements OnInit {
   // Select entity
   selectEntity(entity: Entity) {
     this.selectedEntity = entity;
-    this.detailTab = 'ric'; // Reset to first tab
+    this.detailTab = 'ric';
   }
 
   // Close detail panel
