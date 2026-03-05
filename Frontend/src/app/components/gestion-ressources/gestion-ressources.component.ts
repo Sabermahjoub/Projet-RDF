@@ -16,7 +16,7 @@ interface Entity {
   type: 'Event' | 'Person' | 'Record' | 'Instantiation' | 'Agent' | 'Place' | 'Record Resource';
   birthDate?: string;
   deathDate?: string;
-  associatedWith?: string[];
+  associatedWith?: any[];
 }
 
 interface EntityType {
@@ -76,7 +76,7 @@ export class GestionRessourcesComponent implements OnInit {
       type: 'Person',
       birthDate: '07/11/1867',
       deathDate: '04/07/1934',
-      associatedWith: ['Pierre Curie', 'Irène Joliot-Curie']
+      associatedWith: [2, 11]
     },
     {
       id: '2',
@@ -87,7 +87,7 @@ export class GestionRessourcesComponent implements OnInit {
       type: 'Person',
       birthDate: '15/05/1859',
       deathDate: '19/04/1906',
-      associatedWith: ['Marie Curie']
+      associatedWith: [1]
     },
     {
       id: '3',
@@ -185,8 +185,10 @@ export class GestionRessourcesComponent implements OnInit {
   filteredEntities: Entity[] = [];
   filteredEntityTypes: EntityType[] = [];
   selectedEntity: Entity | null = null;
+  previousSelectedEntity: Entity | null = null;
   selectedType: Entity['type'] | null = null;
   searchQuery: string = '';
+  // goBack : boolean = false;
   typeSearchQuery: string = '';
   activeView: 'tableau' | 'graphe' | 'sources' | 'sparql' = 'tableau';
   detailTab: 'ric' | 'foaf' | 'metadata' = 'ric';
@@ -340,6 +342,28 @@ export class GestionRessourcesComponent implements OnInit {
     if (this.sortColumn) {
       this.applyAllFilters();
     }
+  }
+
+  backToPreviousEntity() {
+    if (this.previousSelectedEntity) {
+      const prev = this.previousSelectedEntity;
+      this.previousSelectedEntity = null;
+      this.selectEntity(prev);
+    }
+  }
+
+  changeEntityView(id: any) {
+    this.previousSelectedEntity = this.selectedEntity;
+
+    const entityFound = this.getEntityById(id);
+    if (entityFound) {
+      this.selectEntity(entityFound);
+    }
+  }
+
+  getEntityById(id: number): Entity | undefined {
+    const id_str = id.toString();
+    return this.allEntities.find(entity => entity.id === id_str);
   }
 
   // Select entity
