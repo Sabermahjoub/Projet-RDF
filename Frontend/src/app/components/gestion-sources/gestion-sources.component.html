@@ -1,282 +1,484 @@
-<div class="container">
+<!-- src/app/components/gestion-sources/gestion-sources.component.html -->
+
+<div class="flex flex-col h-screen bg-gray-50">
   <!-- Header -->
-  <div class="header">
-    <div class="header-content">
-      <h1 class="title">Data Source Management</h1>
-      <p class="subtitle">Manage RDF data sources and named graphs for your project</p>
+  <header class="bg-gradient-to-r from-blue-900 to-blue-600 shadow-lg">
+    <div class="flex items-center justify-between px-6 py-4">
+      <!-- Left: Logo and Title -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-center justify-center w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl hover:bg-white/30 transition-all duration-300 cursor-pointer">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white tracking-tight">Gestion des Sources de Données RDF</h1>
+          <p class="text-xs text-blue-100">Graphes nommés et sous-graphes RDF</p>
+        </div>
+      </div>
+
+      <!-- Right: Quick Stats -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-lg">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+          </svg>
+          <span class="text-sm text-white font-medium">{{ dataSources.length }} sources</span>
+        </div>
+      </div>
     </div>
-    <button 
-      mat-raised-button 
-      color="primary" 
-      class="create-btn"
-      (click)="openCreateForm()"
-      *ngIf="!showForm">
-      <mat-icon>add</mat-icon>
-      New Data Source
-    </button>
-  </div>
+  </header>
 
-  <!-- Create/Edit Form -->
-  <div class="form-container" *ngIf="showForm">
-    <mat-card class="form-card">
-      <mat-card-header>
-        <mat-card-title>
-          {{ isEditing ? 'Edit Data Source' : 'Create New Data Source' }}
-        </mat-card-title>
-      </mat-card-header>
-      
-      <mat-card-content>
-        <form [formGroup]="dataSourceForm" (ngSubmit)="onSubmit()">
-          <div class="form-grid">
-            <!-- Source Type -->
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Source Type</mat-label>
-              <mat-select formControlName="sourceType">
-                <mat-option value="INTERNAL">Internal (Editable in this app)</mat-option>
-                <mat-option value="EXTERNAL">External (Read-only, imported from other tools)</mat-option>
-              </mat-select>
-              <mat-icon matPrefix>category</mat-icon>
-              <mat-hint>Internal sources are editable. External sources are read-only.</mat-hint>
-            </mat-form-field>
+  <!-- Main Content Area -->
+  <div class="flex flex-1 overflow-hidden">
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto bg-gray-50">
+      <div class="p-6">
+        <!-- Stats Bar -->
+        <div class="mb-4 flex items-center gap-4">
+          <div class="flex items-center gap-2 text-sm text-gray-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7"></path>
+            </svg>
+            <span><strong>{{ dataSources.length }}</strong> source(s) de données</span>
+          </div>
 
-            <!-- Short Name (Used for Named Graph) -->
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Short Name (Named Graph ID)</mat-label>
-              <input 
-                matInput 
-                formControlName="shortName" 
-                placeholder="e.g., lameta-recordings"
-                [readonly]="isEditing">
-              <mat-icon matPrefix>tag</mat-icon>
-              <mat-hint>This creates the named graph: urn:datasource:{{dataSourceForm.get('shortName')?.value || 'your-name'}}</mat-hint>
-              <mat-error *ngIf="dataSourceForm.get('shortName')?.hasError('required')">
-                Short name is required
-              </mat-error>
-              <mat-error *ngIf="dataSourceForm.get('shortName')?.hasError('pattern')">
-                Only letters, numbers, dashes and underscores allowed
-              </mat-error>
-            </mat-form-field>
+          <!-- Active Filter Badge -->
+          <div *ngIf="showForm" class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium animate-fade-in">
+            <span>Mode création/édition actif</span>
+          </div>
+        </div>
 
-            <!-- Name -->
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Display Name</mat-label>
-              <input 
-                matInput 
-                formControlName="name" 
-                placeholder="e.g., Lameta Audio Recordings">
-              <mat-icon matPrefix>title</mat-icon>
-              <mat-error *ngIf="dataSourceForm.get('name')?.hasError('required')">
-                Name is required
-              </mat-error>
-            </mat-form-field>
+        <!-- Actions Bar -->
+        <div class="flex items-center gap-3 mb-6">
+          <button 
+            (click)="openCreateForm()"
+            *ngIf="!showForm"
+            class="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all text-sm font-medium shadow-sm hover:shadow-md transform hover:scale-105 duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <span>Nouvelle Source de Données</span>
+          </button>
 
-            <!-- Description -->
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Description</mat-label>
-              <textarea 
-                matInput 
-                formControlName="description" 
-                rows="3"
-                placeholder="Describe the content of this data source..."></textarea>
-              <mat-icon matPrefix>description</mat-icon>
-            </mat-form-field>
+          <div class="flex-1"></div>
 
-            <!-- External Source Fields -->
-            <div class="external-fields" *ngIf="isExternal()">
-              <h3 class="section-title">
-                <mat-icon>cloud_download</mat-icon>
-                External Source Configuration
-              </h3>
+          <div class="flex items-center gap-2">
+            <button class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" aria-label="Filtres avancés">
+              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+              </svg>
+            </button>
 
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Origin Tool/System</mat-label>
-                <mat-select formControlName="tool">
-                  <mat-option value="">None</mat-option>
-                  <mat-option value="Tropy">Tropy (Photo management)</mat-option>
-                  <mat-option value="Lameta">Lameta (Audio/Video recordings)</mat-option>
-                  <mat-option value="Gramps">Gramps (Genealogy data)</mat-option>
-                  <mat-option value="Other">Other RDF source</mat-option>
-                </mat-select>
-                <mat-icon matPrefix>build</mat-icon>
-              </mat-form-field>
+            <button class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" aria-label="Exporter les données">
+              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
 
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>RDF File URL or Path</mat-label>
-                <input 
-                  matInput 
-                  formControlName="url" 
-                  placeholder="file:///path/to/data.ttl or https://example.com/data.rdf">
-                <mat-icon matPrefix>link</mat-icon>
-                <mat-hint>Path to the RDF file to import</mat-hint>
-              </mat-form-field>
+        <!-- Create/Edit Form -->
+        <div *ngIf="showForm" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6 animate-fade-in">
+          <div class="px-6 py-4 bg-gradient-to-r from-blue-900 to-blue-600 border-b border-blue-700">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                <h2 class="text-lg font-semibold text-white">
+                  {{ isEditing ? 'Modifier la Source de Données' : 'Créer une Nouvelle Source de Données' }}
+                </h2>
+              </div>
+              <button (click)="cancelForm()" class="p-1.5 hover:bg-white/20 rounded-lg transition-colors" aria-label="Fermer">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
 
-              <div class="info-box">
-                <mat-icon>info</mat-icon>
+          <div class="p-6">
+            <form [formGroup]="dataSourceForm" (ngSubmit)="onSubmit()">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Source Type -->
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Type de Source *</label>
+                  <select formControlName="sourceType" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
+                    <option value="INTERNAL">Interne (Éditable dans l'application)</option>
+                    <option value="EXTERNAL">Externe (Lecture seule, importée)</option>
+                  </select>
+                  <p class="mt-1 text-xs text-gray-500">Les sources internes sont éditables. Les sources externes sont en lecture seule.</p>
+                </div>
+
+                <!-- Short Name -->
                 <div>
-                  <strong>Note:</strong> External data sources are read-only. 
-                  To modify this data, edit it in the original tool ({{ dataSourceForm.get('tool')?.value || 'the source application' }}) 
-                  and re-import using the "Re-import" button.
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Nom Court (ID du Graphe) *
+                  </label>
+                  <input 
+                    type="text" 
+                    formControlName="shortName" 
+                    placeholder="e.g., lameta-recordings"
+                    [readonly]="isEditing"
+                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
+                    [class.border-red-300]="dataSourceForm.get('shortName')?.invalid && dataSourceForm.get('shortName')?.touched">
+                  <p class="mt-1 text-xs text-gray-500 font-mono">Graphe: urn:datasource:{{dataSourceForm.get('shortName')?.value || 'your-name'}}</p>
+                  <div *ngIf="dataSourceForm.get('shortName')?.invalid && dataSourceForm.get('shortName')?.touched" class="mt-1 text-xs text-red-600">
+                    Seuls les lettres, chiffres, tirets et underscores sont autorisés
+                  </div>
                 </div>
+
+                <!-- Name -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Nom d'Affichage *</label>
+                  <input 
+                    type="text" 
+                    formControlName="name" 
+                    placeholder="e.g., Enregistrements Audio Lameta"
+                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
+                    [class.border-red-300]="dataSourceForm.get('name')?.invalid && dataSourceForm.get('name')?.touched">
+                  <div *ngIf="dataSourceForm.get('name')?.invalid && dataSourceForm.get('name')?.touched" class="mt-1 text-xs text-red-600">
+                    Le nom est requis
+                  </div>
+                </div>
+
+                <!-- Description -->
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <textarea 
+                    formControlName="description" 
+                    rows="3"
+                    placeholder="Décrivez le contenu de cette source de données..."
+                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"></textarea>
+                </div>
+
+                <!-- External Source Fields -->
+                <ng-container *ngIf="isExternal()">
+                  <div class="md:col-span-2">
+                    <div class="flex items-center gap-2 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      <p class="text-sm text-blue-700">
+                        <strong>Note:</strong> Les sources externes sont en lecture seule. 
+                        Pour modifier ces données, éditez-les dans l'outil source puis réimportez.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Outil/Système Source</label>
+                    <select formControlName="tool" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
+                      <option value="">Aucun</option>
+                      <option value="Tropy">Tropy (Gestion de photos)</option>
+                      <option value="Lameta">Lameta (Enregistrements audio/vidéo)</option>
+                      <option value="Gramps">Gramps (Données généalogiques)</option>
+                      <option value="Other">Autre source RDF</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">URL ou Chemin du Fichier RDF</label>
+                    <input 
+                      type="text" 
+                      formControlName="url" 
+                      placeholder="file:///path/to/data.ttl ou https://example.com/data.rdf"
+                      class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
+                    <p class="mt-1 text-xs text-gray-500">Chemin vers le fichier RDF à importer</p>
+                  </div>
+                </ng-container>
+              </div>
+
+              <!-- Form Actions -->
+              <div class="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+                <button 
+                  type="button" 
+                  (click)="cancelForm()"
+                  class="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+                  Annuler
+                </button>
+                <button 
+                  type="submit" 
+                  [disabled]="!dataSourceForm.valid"
+                  class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+                  {{ isEditing ? 'Mettre à Jour' : 'Créer la Source' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Sources List -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" *ngIf="dataSources.length > 0">
+          <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+              <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+                </svg>
+                Sources de Données & Graphes Nommés
+              </h2>
+              <span class="text-sm text-gray-500">{{ dataSources.length }} source(s)</span>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Nom & Graphe
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Source
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Dernière Synchro
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Éditable
+                  </th>
+                  <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <tr 
+                  *ngFor="let source of dataSources" 
+                  (click)="selectDataSource(source)"
+                  [class.bg-blue-50]="selectedDataSource?.id === source.id"
+                  class="hover:bg-gray-50 cursor-pointer transition-colors group">
+                  <td class="px-6 py-4">
+                    <div class="flex flex-col">
+                      <span class="text-sm font-medium text-gray-900">{{ source.name }}</span>
+                      <span class="text-xs text-gray-500 font-mono mt-1">{{ source.shortName }}</span>
+                      <span class="text-xs text-blue-600 font-mono mt-0.5 flex items-center gap-1" *ngIf="source.graphIRI">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                        </svg>
+                        {{ source.graphIRI }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span 
+                      [class.bg-blue-100]="source.sourceType === 'INTERNAL'"
+                      [class.text-blue-700]="source.sourceType === 'INTERNAL'"
+                      [class.bg-purple-100]="source.sourceType === 'EXTERNAL'"
+                      [class.text-purple-700]="source.sourceType === 'EXTERNAL'"
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                      {{ source.sourceType }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-600">
+                    <span *ngIf="source.tool" class="inline-flex items-center gap-1">
+                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      </svg>
+                      {{ source.tool }}
+                    </span>
+                    <span *ngIf="!source.tool" class="text-gray-400">-</span>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-gray-600">
+                    <span *ngIf="source.lastSyncDate">{{ source.lastSyncDate | date:'short' }}</span>
+                    <span *ngIf="!source.lastSyncDate" class="text-gray-400">-</span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span 
+                      [class.bg-green-100]="source.editable !== false"
+                      [class.text-green-700]="source.editable !== false"
+                      [class.bg-red-100]="source.editable === false"
+                      [class.text-red-700]="source.editable === false"
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <circle cx="10" cy="10" r="4"></circle>
+                      </svg>
+                      {{ source.editable !== false ? 'Oui' : 'Non' }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        (click)="openEditForm(source); $event.stopPropagation()" 
+                        [disabled]="source.editable === false"
+                        [class.opacity-50]="source.editable === false"
+                        class="text-blue-600 hover:text-blue-800 transition-colors disabled:cursor-not-allowed" 
+                        [attr.aria-label]="source.editable === false ? 'Impossible d\'éditer une source externe' : 'Modifier'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                      </button>
+                      <button 
+                        *ngIf="source.sourceType === 'EXTERNAL'"
+                        (click)="reimportSource(source); $event.stopPropagation()" 
+                        class="text-purple-600 hover:text-purple-800 transition-colors" 
+                        aria-label="Réimporter">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                        </svg>
+                      </button>
+                      <button 
+                        (click)="deleteDataSource(source); $event.stopPropagation()" 
+                        class="text-red-600 hover:text-red-800 transition-colors" 
+                        aria-label="Supprimer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="dataSources.length === 0 && !showForm" class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+          <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+          </svg>
+          <h3 class="mt-4 text-lg font-medium text-gray-900">Aucune Source de Données</h3>
+          <p class="mt-2 text-sm text-gray-500">Créez votre première source pour commencer à gérer vos métadonnées RDF</p>
+          <button 
+            (click)="openCreateForm()"
+            class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Créer une Source de Données
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Detail Panel -->
+    <aside *ngIf="selectedDataSource" class="w-96 bg-white border-l border-gray-200 overflow-y-auto shadow-xl animate-slide-in">
+      <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+        <div class="flex items-center gap-3">
+          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+          </svg>
+          <h2 class="text-lg font-semibold text-gray-900">{{ selectedDataSource.name }}</h2>
+        </div>
+        <button (click)="closeDetail()" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Fermer">
+          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6">
+        <!-- Metadata Section -->
+        <div class="space-y-6">
+          <!-- ID -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">ID</label>
+            <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+              <span class="text-sm text-gray-600 font-mono">{{ selectedDataSource.id }}</span>
+              <button (click)="copyToClipboard(selectedDataSource.id)" class="text-gray-400 hover:text-gray-600 transition-colors" aria-label="Copier">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Graph IRI -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Graphe Nommé (IRI)</label>
+            <div class="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <span class="text-sm text-blue-700 font-mono">{{ selectedDataSource.graphIRI }}</span>
+              <button (click)="copyToClipboard(selectedDataSource.graphIRI)" class="text-blue-400 hover:text-blue-600 transition-colors" aria-label="Copier">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div *ngIf="selectedDataSource.description">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <p class="text-sm text-gray-600">{{ selectedDataSource.description }}</p>
+          </div>
+
+          <!-- Metadata -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Type</label>
+              <span 
+                [class.bg-blue-100]="selectedDataSource.sourceType === 'INTERNAL'"
+                [class.text-blue-700]="selectedDataSource.sourceType === 'INTERNAL'"
+                [class.bg-purple-100]="selectedDataSource.sourceType === 'EXTERNAL'"
+                [class.text-purple-700]="selectedDataSource.sourceType === 'EXTERNAL'"
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                {{ selectedDataSource.sourceType }}
+              </span>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Éditable</label>
+              <span 
+                [class.bg-green-100]="selectedDataSource.editable !== false"
+                [class.text-green-700]="selectedDataSource.editable !== false"
+                [class.bg-red-100]="selectedDataSource.editable === false"
+                [class.text-red-700]="selectedDataSource.editable === false"
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
+                {{ selectedDataSource.editable !== false ? 'Oui' : 'Non' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- External Source Info -->
+          <div *ngIf="selectedDataSource.sourceType === 'EXTERNAL'" class="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+            <h3 class="text-sm font-medium text-purple-900 mb-3">Source Externe</h3>
+            <div class="space-y-2">
+              <div *ngIf="selectedDataSource.tool">
+                <span class="text-xs font-semibold text-purple-700 uppercase tracking-wider">Outil</span>
+                <p class="text-sm text-purple-900">{{ selectedDataSource.tool }}</p>
+              </div>
+              <div *ngIf="selectedDataSource.url">
+                <span class="text-xs font-semibold text-purple-700 uppercase tracking-wider">URL</span>
+                <p class="text-sm text-purple-900 font-mono break-all">{{ selectedDataSource.url }}</p>
+              </div>
+              <div *ngIf="selectedDataSource.lastSyncDate">
+                <span class="text-xs font-semibold text-purple-700 uppercase tracking-wider">Dernière Synchro</span>
+                <p class="text-sm text-purple-900">{{ selectedDataSource.lastSyncDate | date:'medium' }}</p>
               </div>
             </div>
           </div>
 
-          <!-- Form Actions -->
-          <div class="form-actions">
+          <!-- Import History -->
+          <div *ngIf="selectedDataSource.previousImportDates && selectedDataSource.previousImportDates.length > 0">
             <button 
-              mat-button 
-              type="button" 
-              (click)="cancelForm()">
-              Cancel
+              (click)="toggleHistory(selectedDataSource.id!)"
+              class="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
+              <span>Historique des Imports ({{ selectedDataSource.previousImportDates.length }})</span>
+              <svg 
+                class="w-4 h-4 transition-transform" 
+                [class.rotate-180]="expandedHistory === selectedDataSource.id"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
             </button>
-            <button 
-              mat-raised-button 
-              color="primary" 
-              type="submit"
-              [disabled]="!dataSourceForm.valid">
-              <mat-icon>{{ isEditing ? 'save' : 'add' }}</mat-icon>
-              {{ isEditing ? 'Update' : 'Create' }}
-            </button>
-          </div>
-        </form>
-      </mat-card-content>
-    </mat-card>
-  </div>
-
-  <!-- Data Sources List -->
-  <div class="list-container">
-    <mat-card class="list-card" *ngIf="dataSources.length > 0">
-      <mat-card-header>
-        <mat-card-title>
-          <mat-icon>storage</mat-icon>
-          Data Sources & Named Graphs ({{ dataSources.length }})
-        </mat-card-title>
-      </mat-card-header>
-      
-      <mat-card-content>
-        <div class="sources-grid">
-          <div 
-            class="source-item" 
-            *ngFor="let source of dataSources"
-            [class.external]="source.sourceType === 'EXTERNAL'"
-            [class.readonly]="!source.editable">
-            
-            <div class="source-header">
-              <div class="source-info">
-                <h3 class="source-name">{{ source.name }}</h3>
-                <div class="source-ids">
-                  <span class="source-id">{{ source.shortName }}</span>
-                  <span class="graph-iri" *ngIf="source.graphIRI">
-                    <mat-icon>share</mat-icon>
-                    {{ source.graphIRI }}
-                  </span>
-                </div>
+            <div *ngIf="expandedHistory === selectedDataSource.id" class="mt-2 space-y-1">
+              <div *ngFor="let date of selectedDataSource.previousImportDates" class="flex items-center gap-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                {{ date | date:'medium' }}
               </div>
-              <div class="badges">
-                <mat-chip 
-                  [class.chip-internal]="source.sourceType === 'INTERNAL'"
-                  [class.chip-external]="source.sourceType === 'EXTERNAL'">
-                  {{ source.sourceType }}
-                </mat-chip>
-                <mat-chip 
-                  *ngIf="source.editable === false"
-                  class="chip-readonly">
-                  <mat-icon>lock</mat-icon>
-                  READ-ONLY
-                </mat-chip>
-              </div>
-            </div>
-
-            <p class="source-description" *ngIf="source.description">
-              {{ source.description }}
-            </p>
-
-            <!-- Statistics -->
-            <div class="source-stats" *ngIf="source.recordCount">
-              <div class="stat-item">
-                <mat-icon>description</mat-icon>
-                <span>{{ source.recordCount }} records</span>
-              </div>
-            </div>
-
-            <!-- External Source Metadata -->
-            <div class="source-meta" *ngIf="source.sourceType === 'EXTERNAL'">
-              <span *ngIf="source.tool" class="meta-item">
-                <mat-icon>build</mat-icon>
-                Source: {{ source.tool }}
-              </span>
-              <span *ngIf="source.url" class="meta-item url-item">
-                <mat-icon>link</mat-icon>
-                <span class="url-text" [title]="source.url">{{ source.url }}</span>
-              </span>
-              <span *ngIf="source.lastSyncDate" class="meta-item">
-                <mat-icon>update</mat-icon>
-                Last import: {{ source.lastSyncDate | date:'short' }}
-              </span>
-            </div>
-
-            <!-- Import History -->
-            <div class="import-history" *ngIf="source.previousImportDates && source.previousImportDates.length > 0">
-              <button 
-                mat-button 
-                class="history-toggle"
-                (click)="toggleHistory(source.id!)">
-                <mat-icon>history</mat-icon>
-                Import History ({{ source.previousImportDates.length }})
-              </button>
-              <div class="history-list" *ngIf="expandedHistory === source.id">
-                <div *ngFor="let date of source.previousImportDates" class="history-item">
-                  <mat-icon>schedule</mat-icon>
-                  {{ date | date:'medium' }}
-                </div>
-              </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="source-actions">
-              <button 
-                mat-icon-button 
-                color="primary"
-                (click)="openEditForm(source)"
-                [disabled]="source.editable === false"
-                [matTooltip]="source.editable === false ? 'Cannot edit external sources' : 'Edit metadata'">
-                <mat-icon>edit</mat-icon>
-              </button>
-              
-              <button 
-                mat-icon-button 
-                color="accent"
-                *ngIf="source.sourceType === 'EXTERNAL'"
-                (click)="reimportSource(source)"
-                matTooltip="Re-import from RDF file">
-                <mat-icon>cloud_download</mat-icon>
-              </button>
-              
-              <button 
-                mat-icon-button 
-                color="warn"
-                (click)="deleteDataSource(source)"
-                [matTooltip]="'Delete this data source and its named graph'">
-                <mat-icon>delete</mat-icon>
-              </button>
             </div>
           </div>
         </div>
-      </mat-card-content>
-    </mat-card>
-
-    <!-- Empty State -->
-    <div class="empty-state" *ngIf="dataSources.length === 0 && !showForm">
-      <mat-icon class="empty-icon">folder_open</mat-icon>
-      <h2>No Data Sources Yet</h2>
-      <p>Create your first data source to start managing RDF metadata in named graphs</p>
-      <button 
-        mat-raised-button 
-        color="primary" 
-        (click)="openCreateForm()">
-        <mat-icon>add</mat-icon>
-        Create Data Source
-      </button>
-    </div>
+      </div>
+    </aside>
   </div>
 </div>
