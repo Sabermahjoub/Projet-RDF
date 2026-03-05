@@ -1,0 +1,3 @@
+
+<http://example.org/bob> a <http://xmlns.com/foaf/0.1/Person>;
+  <http://example.org/name> "Bob" .

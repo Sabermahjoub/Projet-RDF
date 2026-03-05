@@ -1,0 +1,2 @@
+// SSR désactivé
+export default {};
