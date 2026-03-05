@@ -33,3 +33,9 @@ build/
 .vscode/
 
 data/rdf-store
+data/
+projects/
+*.dat
+*.hash
+*.id
+lock/
