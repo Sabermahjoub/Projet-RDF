@@ -1,4 +1,4 @@
-// src/app/components/gestion-sources/gestion-sources.component-v2.ts
+// src/app/components/gestion-sources/gestion-sources.component.ts
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -47,12 +47,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 })
 export class GestionSourcesComponent implements OnInit, OnDestroy {
   dataSources: DataSource[] = [];
-  displayedColumns: string[] = ['name', 'shortName', 'type', 'description', 'actions'];
+  selectedDataSource: DataSource | null = null;
+  expandedHistory: string | null = null;
   
   showForm = false;
   isEditing = false;
   currentEditId: string | null = null;
-  expandedHistory: string | null = null; // Track which source's history is expanded
   
   dataSourceForm: FormGroup;
   private destroy$ = new Subject<void>();
@@ -76,7 +76,6 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadDataSources();
     
-    // Subscribe to data sources changes
     this.dataSourceService.dataSources$
       .pipe(takeUntil(this.destroy$))
       .subscribe(sources => {
@@ -97,7 +96,7 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
           this.dataSources = sources;
         },
         error: (error) => {
-          this.showNotification('Error loading data sources', 'error');
+          this.showNotification('Erreur lors du chargement des sources', 'error');
           console.error('Error:', error);
         }
       });
@@ -107,13 +106,13 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
     this.showForm = true;
     this.isEditing = false;
     this.currentEditId = null;
+    this.selectedDataSource = null;
     this.dataSourceForm.reset({ sourceType: 'INTERNAL' });
   }
 
   openEditForm(dataSource: DataSource): void {
-    // Cannot edit external sources (only metadata like name/description)
     if (dataSource.editable === false) {
-      this.showNotification('External sources cannot be edited. Edit in the source application and re-import.', 'warning');
+      this.showNotification('Les sources externes ne peuvent pas être éditées. Éditez dans l\'outil source et réimportez.', 'warning');
       return;
     }
 
@@ -148,7 +147,7 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
         this.createDataSource(formValue);
       }
     } else {
-      this.showNotification('Please fill in all required fields', 'error');
+      this.showNotification('Veuillez remplir tous les champs requis', 'error');
     }
   }
 
@@ -158,13 +157,13 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (created) => {
           this.showNotification(
-            `Data source created with named graph: ${created.graphIRI}`, 
+            `Source créée avec le graphe nommé: ${created.graphIRI}`, 
             'success'
           );
           this.cancelForm();
         },
         error: (error) => {
-          this.showNotification('Error creating data source', 'error');
+          this.showNotification('Erreur lors de la création', 'error');
           console.error('Error:', error);
         }
       });
@@ -175,11 +174,11 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (updated) => {
-          this.showNotification('Data source metadata updated successfully', 'success');
+          this.showNotification('Source mise à jour avec succès', 'success');
           this.cancelForm();
         },
         error: (error) => {
-          this.showNotification('Error updating data source', 'error');
+          this.showNotification('Erreur lors de la mise à jour', 'error');
           console.error('Error:', error);
         }
       });
@@ -187,18 +186,21 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
 
   deleteDataSource(dataSource: DataSource): void {
     const message = dataSource.sourceType === 'EXTERNAL' 
-      ? `This will delete the named graph "${dataSource.graphIRI}" and all imported data from ${dataSource.tool}. Are you sure?`
-      : `This will delete "${dataSource.name}" and its named graph. Are you sure?`;
+      ? `Supprimer le graphe nommé "${dataSource.graphIRI}" et toutes les données importées de ${dataSource.tool}?`
+      : `Supprimer "${dataSource.name}" et son graphe nommé?`;
     
     if (confirm(message)) {
       this.dataSourceService.deleteDataSource(dataSource.id!)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
-            this.showNotification('Data source and named graph deleted successfully', 'success');
+            this.showNotification('Source et graphe nommé supprimés', 'success');
+            if (this.selectedDataSource?.id === dataSource.id) {
+              this.selectedDataSource = null;
+            }
           },
           error: (error) => {
-            this.showNotification('Error deleting data source', 'error');
+            this.showNotification('Erreur lors de la suppression', 'error');
             console.error('Error:', error);
           }
         });
@@ -210,31 +212,51 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const confirmMsg = `Re-import data from ${dataSource.url}?\n\nThis will:\n- Delete the current named graph\n- Import fresh data from the RDF file\n- Update the import date`;
+    const confirmMsg = `Réimporter les données depuis ${dataSource.url}?\n\nCeci va:\n- Supprimer le graphe nommé actuel\n- Importer les données fraîches du fichier RDF\n- Mettre à jour la date d'import`;
     
     if (confirm(confirmMsg)) {
-      this.showNotification('Re-importing data...', 'info');
+      this.showNotification('Réimportation en cours...', 'info');
       
       this.dataSourceService.syncExternalSource(dataSource.id!)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
             this.showNotification(
-              `Successfully re-imported data from ${dataSource.tool || 'external source'}`, 
+              `Données réimportées depuis ${dataSource.tool || 'source externe'}`, 
               'success'
             );
             this.loadDataSources();
           },
           error: (error) => {
-            this.showNotification('Error re-importing data', 'error');
+            this.showNotification('Erreur lors du réimport', 'error');
             console.error('Error:', error);
           }
         });
     }
   }
 
+  selectDataSource(source: DataSource): void {
+    this.selectedDataSource = source;
+    this.showForm = false;
+  }
+
+  closeDetail(): void {
+    this.selectedDataSource = null;
+  }
+
   toggleHistory(sourceId: string): void {
     this.expandedHistory = this.expandedHistory === sourceId ? null : sourceId;
+  }
+
+  copyToClipboard(text: string | undefined): void {
+    if (!text) return;
+    
+    navigator.clipboard.writeText(text).then(() => {
+      this.showNotification('Copié dans le presse-papiers', 'success');
+    }).catch(err => {
+      console.error('Erreur lors de la copie:', err);
+      this.showNotification('Erreur lors de la copie', 'error');
+    });
   }
 
   isExternal(): boolean {
@@ -242,7 +264,7 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
   }
 
   private showNotification(message: string, type: 'success' | 'error' | 'warning' | 'info'): void {
-    this.snackBar.open(message, 'Close', {
+    this.snackBar.open(message, 'Fermer', {
       duration: type === 'error' ? 5000 : 3000,
       horizontalPosition: 'end',
       verticalPosition: 'top',
