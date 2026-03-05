@@ -20,4 +20,9 @@ public class SparqlController {
     public List<Map<String, String>> select(@RequestBody Map<String, String> body) {
         return service.select(body.get("query"));
     }
+
+    @PostMapping("/update")
+    public void update(@RequestBody Map<String,String> body){
+        service.update(body.get("query"));
+    }
 }
