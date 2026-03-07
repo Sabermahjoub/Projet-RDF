@@ -196,6 +196,7 @@ export class GestionRessourcesComponent implements OnInit {
     this.filteredEntityTypes = [...this.entityTypes];
     this.updateEntityTypeCounts();
     this.detailTab = 'ric';
+    this.openCreateRessourceDialog();
   
   }
 
