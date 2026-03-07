@@ -18,18 +18,18 @@
       </div>
 
       <!-- Right: View Tabs -->
-      <nav class="flex gap-1 bg-white/10 backdrop-blur-md p-1 rounded-lg" role="tablist">
-        <button (click)="setView('tableau')" [class.bg-white]="activeView === 'tableau'" [class.text-blue-600]="activeView === 'tableau'" [class.shadow-sm]="activeView === 'tableau'" class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/20" role="tab" [attr.aria-selected]="activeView === 'tableau'" aria-label="Vue Tableau">
+      <nav class="flex gap-4 bg-white/10 backdrop-blur-md p-1 rounded-lg" role="tablist">
+        <button (click)="setView('tableau')" [class.bg-white]="activeView === 'tableau'" [class.text-blue-600]="activeView === 'tableau'" [class.shadow-sm]="activeView === 'tableau'" class="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/20" role="tab" [attr.aria-selected]="activeView === 'tableau'" aria-label="Tab View">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <rect x="3" y="3" width="7" height="7" stroke-width="2"></rect>
             <rect x="14" y="3" width="7" height="7" stroke-width="2"></rect>
             <rect x="14" y="14" width="7" height="7" stroke-width="2"></rect>
             <rect x="3" y="14" width="7" height="7" stroke-width="2"></rect>
           </svg>
-          <span>Vue Tableau</span>
+          <span>Tab View</span>
         </button>
         
-        <button (click)="setView('graphe')" [class.bg-white]="activeView === 'graphe'" [class.text-blue-600]="activeView === 'graphe'" [class.shadow-sm]="activeView === 'graphe'" class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/20" role="tab" [attr.aria-selected]="activeView === 'graphe'" aria-label="Vue Graphe">
+        <button (click)="setView('graphe')" [class.bg-white]="activeView === 'graphe'" [class.text-blue-600]="activeView === 'graphe'" [class.shadow-sm]="activeView === 'graphe'" class="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/20" role="tab" [attr.aria-selected]="activeView === 'graphe'" aria-label="Graph View">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="18" cy="5" r="3" stroke-width="2"></circle>
             <circle cx="6" cy="12" r="3" stroke-width="2"></circle>
@@ -37,17 +37,17 @@
             <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" stroke-width="2"></line>
             <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" stroke-width="2"></line>
           </svg>
-          <span>Vue Graphe</span>
+          <span>Graph View</span>
         </button>
         
-        <button (click)="setView('sources')" [class.bg-white]="activeView === 'sources'" [class.text-blue-600]="activeView === 'sources'" [class.shadow-sm]="activeView === 'sources'" class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/20" role="tab" [attr.aria-selected]="activeView === 'sources'" aria-label="Vue Sources">
+        <button (click)="setView('sources')" [class.bg-white]="activeView === 'sources'" [class.text-blue-600]="activeView === 'sources'" [class.shadow-sm]="activeView === 'sources'" class="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/20" role="tab" [attr.aria-selected]="activeView === 'sources'" aria-label="Datasource View">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
           </svg>
-          <span>Sources</span>
+          <span>Datasource View</span>
         </button>
         
-        <button (click)="setView('sparql')" [class.bg-white]="activeView === 'sparql'" [class.text-blue-600]="activeView === 'sparql'" [class.shadow-sm]="activeView === 'sparql'" class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/20" role="tab" [attr.aria-selected]="activeView === 'sparql'" aria-label="Vue SPARQL">
+        <button (click)="setView('sparql')" [class.bg-white]="activeView === 'sparql'" [class.text-blue-600]="activeView === 'sparql'" [class.shadow-sm]="activeView === 'sparql'" class="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 hover:bg-white/20" role="tab" [attr.aria-selected]="activeView === 'sparql'" aria-label="SPARQL view">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <polyline points="16 18 22 12 16 6" stroke-width="2"></polyline>
             <polyline points="8 6 2 12 8 18" stroke-width="2"></polyline>
@@ -160,7 +160,12 @@
             </button>
           </div>
 
-          <button (click)="addNewPerson()" class="flex items-center gap-2 p-1! bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all text-sm font-medium shadow-sm hover:shadow-md transform hover:scale-105 duration-200">
+          <button (click)="openCreateRessourceDialog()" 
+                [disabled]="!selectedType" 
+                  class="flex items-center gap-2 !p-1 bg-blue-600 text-white rounded-lg 
+                  transition-all text-sm font-medium shadow-sm transform duration-200
+                  hover:bg-blue-700 hover:shadow-md hover:scale-105
+                  disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
@@ -484,185 +489,4 @@
     </aside>
   </div>
 
-  <!-- Modal de création de nouvelle personne -->
-  <div *ngIf="showPersonForm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-      <!-- Header -->
-      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-          </svg>
-          <h2 class="text-lg font-semibold text-gray-900">Nouvelle Personne</h2>
-        </div>
-        <button (click)="cancelNewPerson()" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Fermer">
-          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
-        </button>
-      </div>
-
-      <!-- Formulaire -->
-      <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-        <form [formGroup]="personForm" (ngSubmit)="saveNewPerson()" class="space-y-6">
-          
-          <!-- Champs principaux -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Titre -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Titre *
-              </label>
-              <input type="text" formControlName="titre" placeholder="Nom complet" 
-                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
-                     [class.border-red-300]="personForm.get('titre')?.invalid && personForm.get('titre')?.touched">
-              <div *ngIf="personForm.get('titre')?.invalid && personForm.get('titre')?.touched" class="mt-1 text-xs text-red-600">
-                Le titre est requis
-              </div>
-            </div>
-
-            <!-- Date -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Date *
-              </label>
-              <input type="date" formControlName="date"
-                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
-                     [class.border-red-300]="personForm.get('date')?.invalid && personForm.get('date')?.touched">
-              <div *ngIf="personForm.get('date')?.invalid && personForm.get('date')?.touched" class="mt-1 text-xs text-red-600">
-                La date est requise
-              </div>
-            </div>
-          </div>
-
-          <!-- Source et Statut -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Source -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Source *
-              </label>
-              <select formControlName="source"
-                      class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
-                <option value="">Sélectionner une source</option>
-                <option value="Manuel">Manuel</option>
-                <option value="Automatique">Automatique</option>
-                <option value="Archives scientifiques">Archives scientifiques</option>
-                <option value="Archives institutionnelles">Archives institutionnelles</option>
-                <option value="Bibliothèque nationale">Bibliothèque nationale</option>
-              </select>
-            </div>
-
-            <!-- Statut -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Statut *
-              </label>
-              <select formControlName="statut"
-                      class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
-                <option value="">Sélectionner un statut</option>
-                <option value="complet">Complet</option>
-                <option value="partiel">Partiel</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Dates de naissance et décès -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Date de naissance -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Date de naissance
-              </label>
-              <input type="date" formControlName="birthDate"
-                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
-            </div>
-
-            <!-- Date de décès -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">
-                Date de décès
-              </label>
-              <input type="date" formControlName="deathDate"
-                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
-            </div>
-          </div>
-
-          <!-- Associations -->
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <label class="block text-sm font-medium text-gray-700">
-                Associations
-              </label>
-              <button type="button" (click)="addAssociationField()" 
-                      class="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Ajouter une association
-              </button>
-            </div>
-            
-            <div formArrayName="associatedWith" class="space-y-3">
-              <div *ngFor="let association of associatedWithArray.controls; let i = index" class="flex items-center gap-2">
-                <input type="text" [formControlName]="i" placeholder="Nom de la personne associée"
-                       class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
-                <button type="button" (click)="removeAssociationField(i)"
-                        class="p-2 text-gray-400 hover:text-red-600 transition-colors" aria-label="Supprimer">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Champs personnalisés -->
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <label class="block text-sm font-medium text-gray-700">
-                Champs personnalisés
-              </label>
-              <button type="button" (click)="addCustomField()" 
-                      class="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Ajouter un champ
-              </button>
-            </div>
-            
-            <div formArrayName="customFields" class="space-y-3">
-              <div *ngFor="let fieldGroup of customFieldsArray.controls; let i = index" 
-                   [formGroupName]="i" class="grid grid-cols-12 gap-2">
-                <input type="text" formControlName="name" placeholder="Nom du champ"
-                       class="col-span-5 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
-                <span class="col-span-1 text-center text-gray-400">=</span>
-                <input type="text" formControlName="value" placeholder="Valeur"
-                       class="col-span-5 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
-                <button type="button" (click)="removeCustomField(i)"
-                        class="col-span-1 p-2 text-gray-400 hover:text-red-600 transition-colors" aria-label="Supprimer">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
-            <button type="button" (click)="cancelNewPerson()"
-                    class="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
-              Annuler
-            </button>
-            <button type="submit" [disabled]="personForm.invalid"
-                    class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
-              Créer la personne
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
 </div>

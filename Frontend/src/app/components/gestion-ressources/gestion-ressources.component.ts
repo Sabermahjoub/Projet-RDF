@@ -6,25 +6,9 @@ import { trigger, transition, style, animate } from '@angular/animations';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatListModule} from '@angular/material/list';
-
-interface Entity {
-  id: string;
-  titre: string;
-  date: string;
-  source: string;
-  statut: 'complet' | 'partiel';
-  type: 'Event' | 'Person' | 'Record' | 'Instantiation' | 'Agent' | 'Place' | 'Record Resource';
-  birthDate?: string;
-  deathDate?: string;
-  associatedWith?: any[];
-}
-
-interface EntityType {
-  name: string;
-  icon: string;
-  count: number;
-  type: Entity['type'];
-}
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { CreateRessourceComponent } from '../create-ressource/create-ressource.component';
+import {Entity, EntityType } from '../../models/ressource';
 
 @Component({
   selector: 'app-gestion-ressources',
@@ -34,7 +18,8 @@ interface EntityType {
     ReactiveFormsModule, 
     MatExpansionModule,
     MatDividerModule,
-    MatListModule
+    MatListModule,
+    MatDialogModule
   ],
   templateUrl: './gestion-ressources.component.html',
   styleUrl: './gestion-ressources.component.scss',
@@ -188,7 +173,6 @@ export class GestionRessourcesComponent implements OnInit {
   previousSelectedEntity: Entity | null = null;
   selectedType: Entity['type'] | null = null;
   searchQuery: string = '';
-  // goBack : boolean = false;
   typeSearchQuery: string = '';
   activeView: 'tableau' | 'graphe' | 'sources' | 'sparql' = 'tableau';
   detailTab: 'ric' | 'foaf' | 'metadata' = 'ric';
@@ -197,21 +181,13 @@ export class GestionRessourcesComponent implements OnInit {
   sortColumn: 'titre' | 'date' | 'source' | null = null;
   sortAscending: boolean = true;
 
-  // Formulaire de nouvelle personne
-  personForm: FormGroup;
   showPersonForm: boolean = false;
 
-  constructor(private fb: FormBuilder) {
-    
-    this.personForm = this.fb.group({
-      titre: ['', Validators.required],
-      date: ['', Validators.required],
-      source: ['', Validators.required],
-      statut: ['', Validators.required],
-      birthDate: [''],
-      deathDate: [''],
-      associatedWith: this.fb.array([]),
-      customFields: this.fb.array([])
+  constructor(private dialog: MatDialog) {}
+
+  openCreateRessourceDialog() {
+    this.dialog.open(CreateRessourceComponent, {
+      width: '600px'
     });
   }
 
@@ -220,15 +196,7 @@ export class GestionRessourcesComponent implements OnInit {
     this.filteredEntityTypes = [...this.entityTypes];
     this.updateEntityTypeCounts();
     this.detailTab = 'ric';
-  }
-
-  // Getters pour les FormArrays
-  get associatedWithArray(): FormArray {
-    return this.personForm.get('associatedWith') as FormArray;
-  }
-
-  get customFieldsArray(): FormArray {
-    return this.personForm.get('customFields') as FormArray;
+  
   }
 
   // Update entity type counts based on actual data
@@ -393,97 +361,6 @@ export class GestionRessourcesComponent implements OnInit {
     this.applyAllFilters();
   }
 
-  // Méthode pour ouvrir le formulaire de nouvelle personne
-  addNewPerson() {
-    this.showPersonForm = true;
-    this.personForm.reset();
-    // Réinitialiser les FormArrays
-    while (this.associatedWithArray.length !== 0) {
-      this.associatedWithArray.removeAt(0);
-    }
-    while (this.customFieldsArray.length !== 0) {
-      this.customFieldsArray.removeAt(0);
-    }
-  }
-
-  // Méthode pour annuler la création
-  cancelNewPerson() {
-    this.showPersonForm = false;
-    this.personForm.reset();
-  }
-
-  // Ajouter un champ d'association
-  addAssociationField() {
-    this.associatedWithArray.push(this.fb.control(''));
-  }
-
-  // Supprimer un champ d'association
-  removeAssociationField(index: number) {
-    this.associatedWithArray.removeAt(index);
-  }
-
-  // Ajouter un champ personnalisé
-  addCustomField() {
-    const fieldGroup = this.fb.group({
-      name: [''],
-      value: ['']
-    });
-    this.customFieldsArray.push(fieldGroup);
-  }
-
-  // Supprimer un champ personnalisé
-  removeCustomField(index: number) {
-    this.customFieldsArray.removeAt(index);
-  }
-
-  // Sauvegarder la nouvelle personne
-  saveNewPerson() {
-    if (this.personForm.valid) {
-      const formValue = this.personForm.value;
-      
-      // Générer un ID unique
-      const newId = (this.allEntities.length + 1).toString();
-      
-      // Créer la nouvelle entité
-      const newPerson: Entity = {
-        id: newId,
-        titre: formValue.titre,
-        date: formValue.date,
-        source: formValue.source,
-        statut: formValue.statut as 'complet' | 'partiel',
-        type: 'Person',
-        birthDate: formValue.birthDate,
-        deathDate: formValue.deathDate,
-        associatedWith: formValue.associatedWith.filter((a: string) => a.trim() !== '')
-      };
-
-      // Ajouter les champs personnalisés si présents
-      if (formValue.customFields && formValue.customFields.length > 0) {
-        // Stocker les champs personnalisés dans l'entité
-        (newPerson as any).customFields = formValue.customFields
-          .filter((f: any) => f.name && f.value)
-          .reduce((acc: any, field: any) => {
-            acc[field.name] = field.value;
-            return acc;
-          }, {});
-      }
-
-      // Ajouter à la liste
-      this.allEntities.push(newPerson);
-      
-      // Mettre à jour l'affichage
-      this.applyAllFilters();
-      this.updateEntityTypeCounts();
-      
-      // Réinitialiser et fermer le formulaire
-      this.cancelNewPerson();
-      
-      // Sélectionner la nouvelle entité
-      this.selectEntity(newPerson);
-      
-      console.log('Nouvelle personne créée:', newPerson);
-    }
-  }
 
   // Edit entity
   editEntity(entity: Entity, event: Event) {
