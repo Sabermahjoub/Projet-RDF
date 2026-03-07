@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common'; // 👈 add this
 import { Entity } from '../../models/ressource';
@@ -11,9 +11,11 @@ import { Entity } from '../../models/ressource';
 })
 
 
-export class CreateRessourceComponent {
+export class CreateRessourceComponent implements OnInit {
 
   personForm: FormGroup;
+
+  selectedEntity: Entity | null = null;
 
   allEntities: Entity[] = [
     {
@@ -145,9 +147,24 @@ export class CreateRessourceComponent {
     });
   }
 
+  ngOnInit(): void {
+     this.selectedEntity = {
+      id: '1',
+      titre: 'Marie Curie',
+      date: '1867-11-07',
+      source: 'Manuel',
+      statut: 'complet',
+      type: 'Person',
+      birthDate: '07/11/1867',
+      deathDate: '04/07/1934',
+      associatedWith: [2, 11]
+    };
+  }
+
   get associationsArray(): FormArray {
     return this.personForm.get('associations') as FormArray;
   }
+
 
   addAssociationField() {
 
@@ -159,12 +176,26 @@ export class CreateRessourceComponent {
 
     const associationGroup = this.fb.group({
       predicate: '',
-      object: ''
+      object: '',
+      show : false
     });
 
     this.associationsArray.push(associationGroup);
 
     console.log("Association added. Current associations:", this.associationsArray.value);
+  }
+
+  checkAssociationVisibility(index: number): boolean {
+    const associationGroup = this.associationsArray.at(index);  
+    return associationGroup ? associationGroup.get('show')?.value : false;
+  }
+
+  changeAssociationVisibility(index: number) {
+    const associationGroup = this.associationsArray.at(index);
+    if (associationGroup) {
+      const oldValue = associationGroup.get('show')?.value;
+      associationGroup.get('show')?.setValue(!oldValue);
+    }
   }
 
   removeAssociationField(index: number) {
