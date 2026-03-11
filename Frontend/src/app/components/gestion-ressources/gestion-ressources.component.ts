@@ -10,6 +10,7 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { CreateRessourceComponent } from '../create-ressource/create-ressource.component';
 import {Entity, EntityType } from '../../models/ressource';
 
+import { EntityDetailsComponent } from '../entity-details/entity-details.component';
 @Component({
   selector: 'app-gestion-ressources',
   standalone: true,
@@ -19,7 +20,8 @@ import {Entity, EntityType } from '../../models/ressource';
     MatExpansionModule,
     MatDividerModule,
     MatListModule,
-    MatDialogModule
+    MatDialogModule,
+    EntityDetailsComponent
   ],
   templateUrl: './gestion-ressources.component.html',
   styleUrl: './gestion-ressources.component.scss',
@@ -196,7 +198,6 @@ export class GestionRessourcesComponent implements OnInit {
     this.filteredEntityTypes = [...this.entityTypes];
     this.updateEntityTypeCounts();
     this.detailTab = 'ric';
-    this.openCreateRessourceDialog();
   
   }
 
@@ -321,15 +322,6 @@ export class GestionRessourcesComponent implements OnInit {
     }
   }
 
-  changeEntityView(id: any) {
-    this.previousSelectedEntity = this.selectedEntity;
-
-    const entityFound = this.getEntityById(id);
-    if (entityFound) {
-      this.selectEntity(entityFound);
-    }
-  }
-
   getEntityById(id: number): Entity | undefined {
     const id_str = id.toString();
     return this.allEntities.find(entity => entity.id === id_str);
@@ -339,11 +331,6 @@ export class GestionRessourcesComponent implements OnInit {
   selectEntity(entity: Entity) {
     this.selectedEntity = entity;
     this.detailTab = 'ric';
-  }
-
-  // Close detail panel
-  closeDetail() {
-    this.selectedEntity = null;
   }
 
   // Clear type filter
@@ -378,20 +365,6 @@ export class GestionRessourcesComponent implements OnInit {
     }
   }
 
-  // Delete entity
-  deleteEntity() {
-    if (this.selectedEntity && confirm(`Êtes-vous sûr de vouloir supprimer "${this.selectedEntity.titre}" ?`)) {
-      console.log('Deleting entity:', this.selectedEntity.id);
-      // TODO: Implement delete logic (API call)
-      
-      // Remove from array (temporary)
-      this.allEntities = this.allEntities.filter(e => e.id !== this.selectedEntity!.id);
-      this.applyAllFilters();
-      this.updateEntityTypeCounts();
-      this.closeDetail();
-    }
-  }
-
   // Export data
   exportData() {
     console.log('Exporting data...');
@@ -406,18 +379,6 @@ export class GestionRessourcesComponent implements OnInit {
     link.download = `ric-o-export-${new Date().toISOString().split('T')[0]}.json`;
     link.click();
     URL.revokeObjectURL(url);
-  }
-
-  // Copy to clipboard
-  copyToClipboard(text: string | undefined) {
-    if (text && navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(() => {
-        console.log('Copied to clipboard:', text);
-        // TODO: Show toast notification
-      }).catch(err => {
-        console.error('Failed to copy:', err);
-      });
-    }
   }
 
   // Get icon for entity type
@@ -443,19 +404,6 @@ export class GestionRessourcesComponent implements OnInit {
   // Set active view
   setView(view: 'tableau' | 'graphe' | 'sources' | 'sparql') {
     this.activeView = view;
-  }
-
-  // Remove association
-  removeAssociation(person: string) {
-    if (this.selectedEntity && this.selectedEntity.associatedWith) {
-      this.selectedEntity.associatedWith = this.selectedEntity.associatedWith.filter(p => p !== person);
-    }
-  }
-
-  // Add association
-  addAssociation() {
-    console.log('Add association clicked');
-    // TODO: Implement modal to select person to associate
   }
 
   // TrackBy function for performance
