@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
-import { CommonModule } from '@angular/common'; // 👈 add this
+import { CommonModule } from '@angular/common';
 import { Entity } from '../../models/ressource';
+import { EntityDetailsComponent } from '../entity-details/entity-details.component';
+
 
 @Component({
   selector: 'app-create-ressource',
-  imports: [FormsModule, ReactiveFormsModule,CommonModule],
+  imports: [FormsModule, ReactiveFormsModule,CommonModule, EntityDetailsComponent],
   templateUrl: './create-ressource.component.html',
   styleUrl: './create-ressource.component.scss'
 })
