@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, signal, Component, OnInit } from '@angular/core';
+import {ChangeDetectionStrategy,ChangeDetectorRef, signal, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -11,6 +11,10 @@ import { CreateRessourceComponent } from '../create-ressource/create-ressource.c
 import {Entity, EntityType } from '../../models/ressource';
 
 import { EntityDetailsComponent } from '../entity-details/entity-details.component';
+
+import { GestionRessourcesService } from '../../services/gestion-ressources.service';
+import { GestionProjetsComponent } from '../gestion-projets/gestion-projets.component';
+import { GestionProjetsService } from '../../services/gestion-projets.service';
 @Component({
   selector: 'app-gestion-ressources',
   standalone: true,
@@ -40,6 +44,8 @@ import { EntityDetailsComponent } from '../entity-details/entity-details.compone
 })
 export class GestionRessourcesComponent implements OnInit {
   panelOpenState = signal(false);
+
+  projectName : string = '';
 
   // Entity Types for Sidebar
   entityTypes: EntityType[] = [
@@ -185,7 +191,9 @@ export class GestionRessourcesComponent implements OnInit {
 
   showPersonForm: boolean = false;
 
-  constructor(private dialog: MatDialog) {}
+  constructor(private dialog: MatDialog, private ontologyService: GestionRessourcesService,
+     private projetService: GestionProjetsService,
+      private cdr: ChangeDetectorRef) {}
 
   openCreateRessourceDialog() {
     this.dialog.open(CreateRessourceComponent, {
@@ -198,6 +206,27 @@ export class GestionRessourcesComponent implements OnInit {
     this.filteredEntityTypes = [...this.entityTypes];
     this.updateEntityTypeCounts();
     this.detailTab = 'ric';
+  
+    this.ontologyService.getTypes().subscribe({
+    next: (data) => {
+        console.log("Types d'ontology ", data);
+      },
+      error: (err) => {
+        console.error(err);
+      }
+      }
+    );
+
+    this.projetService.getProject().subscribe({
+    next: (data) => {
+      this.projectName = data.name;
+      this.cdr.markForCheck();
+    },
+      error: (err) => {
+        console.error(err);
+      }
+      }
+    );
   
   }
 
