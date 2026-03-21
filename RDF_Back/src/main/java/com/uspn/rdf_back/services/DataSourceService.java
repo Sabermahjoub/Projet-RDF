@@ -461,15 +461,38 @@ public class DataSourceService {
             conn.clear(ctxGraph);
 
             // 6 Lire le fichier RDF
-            Path path = Path.of(filePath);
+            /*Path path = Path.of(filePath);
+
             if (!Files.exists(path)) {
                 throw new BadRequestException(
                         "Fichier RDF introuvable : " + filePath
+                );
+            }*/
+
+            String cleanPath = filePath;
+            if (cleanPath.startsWith("file:///")) {
+                cleanPath = cleanPath.substring(8);  // Enlève "file:///"
+            } else if (cleanPath.startsWith("file://")) {
+                cleanPath = cleanPath.substring(7);   // Enlève "file://"
+            }
+
+            System.out.println("📍 Original path: " + filePath);
+            System.out.println("📂 Clean path: " + cleanPath);
+
+            Path path = Path.of(cleanPath);
+
+            System.out.println("✅ Absolute path: " + path.toAbsolutePath());
+
+            if (!Files.exists(path)) {
+                throw new BadRequestException(
+                        "Fichier RDF introuvable : " + path.toAbsolutePath()
                 );
             }
 
             try (InputStream in = Files.newInputStream(path)) {
                 conn.add(in, "", RDFFormat.TURTLE, ctxGraph);
+                long tripleCount = conn.size(ctxGraph);
+                System.out.println("📊 Imported " + tripleCount + " triples into graph: " + ctxGraph);
             }
 
             // 7 Mettre à jour lastSync
