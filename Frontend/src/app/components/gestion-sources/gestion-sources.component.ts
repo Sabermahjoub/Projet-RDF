@@ -509,4 +509,202 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
     
     this.showNotification('Export configuration réussi', 'success');
   }
+
+  /**
+ * Gère la sélection du fichier JSON
+ */
+onFileSelected(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  
+  if (!input.files || input.files.length === 0) {
+    return;
+  }
+
+  const file = input.files[0];
+  
+  // Vérifie que c'est bien un fichier JSON
+  if (!file.name.endsWith('.json')) {
+    this.showNotification('Le fichier doit être au format JSON', 'error');
+    return;
+  }
+
+  // Lit le contenu du fichier
+  const reader = new FileReader();
+  
+  reader.onload = (e: ProgressEvent<FileReader>) => {
+    try {
+      const content = e.target?.result as string;
+      const config = JSON.parse(content);
+      
+      // Valide la structure
+      if (!this.validateConfigStructure(config)) {
+        this.showNotification('Format de configuration invalide', 'error');
+        return;
+      }
+
+      // Demande confirmation
+      this.confirmImport(config);
+      
+    } catch (error) {
+      console.error('Erreur parsing JSON:', error);
+      this.showNotification('Fichier JSON invalide', 'error');
+    }
+  };
+
+  reader.onerror = () => {
+    this.showNotification('Erreur lors de la lecture du fichier', 'error');
+  };
+
+  reader.readAsText(file);
+  
+  // Réinitialise l'input pour permettre de réimporter le même fichier
+  input.value = '';
+}
+
+/**
+ * Valide la structure du fichier de configuration
+ */
+private validateConfigStructure(config: any): boolean {
+  // Vérifie que c'est un objet avec la propriété 'sources'
+  if (!config || typeof config !== 'object') {
+    return false;
+  }
+
+  // Accepte 2 formats:
+  // Format 1: { sources: [...] }
+  // Format 2: [...] (array direct)
+  const sources = Array.isArray(config) ? config : config.sources;
+
+  if (!Array.isArray(sources)) {
+    return false;
+  }
+
+  // Vérifie que chaque source a au minimum un shortName et un name
+  return sources.every((s: any) => 
+    s && 
+    typeof s === 'object' && 
+    s.shortName && 
+    s.name &&
+    (s.type || s.sourceType) // Accepte les 2 noms de champ
+  );
+}
+
+  /**
+   * Demande confirmation avant import
+   */
+  private confirmImport(config: any): void {
+    const sources = Array.isArray(config) ? config : config.sources;
+    const count = sources.length;
+
+    const message = `Voulez-vous importer ${count} source(s) ?\n\n` +
+      `⚠️ Attention:\n` +
+      `- Les sources avec le même shortName seront ignorées\n` +
+      `- Seule 1 source INTERNAL peut exister\n` +
+      `- Les sources EXTERNAL seront créées mais pas synchronisées automatiquement`;
+
+    if (confirm(message)) {
+      this.importConfiguration(sources);
+    }
+  }
+
+  /**
+   * Importe les sources depuis la configuration
+   */
+  private importConfiguration(sources: any[]): void {
+    let successCount = 0;
+    let errorCount = 0;
+    let completedCount = 0; // ← NOUVEAU: Compte les requêtes terminées
+    const errors: string[] = [];
+    const totalSources = sources.length;
+
+    // Compte le nombre de sources INTERNAL dans le fichier
+    const internalSources = sources.filter(s => 
+      (s.type || s.sourceType)?.toUpperCase() === 'INTERNAL'
+    );
+
+    // Vérifie la contrainte INTERNAL
+    if (internalSources.length > 1) {
+      this.showNotification(
+        `❌ Le fichier contient ${internalSources.length} sources INTERNAL. Seule 1 est autorisée.`,
+        'error'
+      );
+      return;
+    }
+
+    if (internalSources.length === 1 && !this.canCreateInternalSource()) {
+      this.showNotification(
+        '❌ Une source INTERNAL existe déjà. Supprimez-la avant d\'importer.',
+        'error'
+      );
+      return;
+    }
+
+    // Affiche notification de démarrage
+    this.showNotification(`🔄 Import de ${totalSources} source(s) en cours...`, 'info');
+
+    // Import de chaque source
+    sources.forEach((source) => {
+      const sourceType = (source.type || source.sourceType)?.toUpperCase();
+
+      const request: CreateDataSourceRequest = {
+        shortName: source.shortName,
+        name: source.name,
+        description: source.description || '',
+        sourceType: sourceType as 'INTERNAL' | 'EXTERNAL',
+        url: source.url || undefined,
+        tool: source.tool || undefined
+      };
+
+      const createObservable = sourceType === 'INTERNAL'
+        ? this.dataSourceService.createInternalSource(request)
+        : this.dataSourceService.createExternalSource(request);
+
+      createObservable
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (created) => {
+            successCount++;
+            completedCount++;
+            console.log(`✅ Source importée: ${created.name}`);
+
+            // ✅ CORRECTION: Vérifie si TOUTES les requêtes sont terminées
+            if (completedCount === totalSources) {
+              this.showImportSummary(successCount, errorCount, errors);
+            }
+          },
+          error: (error) => {
+            errorCount++;
+            completedCount++;
+            const errorMsg = `${source.shortName}: ${error.message || 'Erreur inconnue'}`;
+            errors.push(errorMsg);
+            console.error(`❌ Erreur import ${source.shortName}:`, error);
+
+            // ✅ CORRECTION: Vérifie si TOUTES les requêtes sont terminées
+            if (completedCount === totalSources) {
+              this.showImportSummary(successCount, errorCount, errors);
+            }
+          }
+        });
+    });
+  }
+
+  /**
+   * Affiche un résumé de l'import
+   */
+  private showImportSummary(successCount: number, errorCount: number, errors: string[]): void {
+    if (errorCount === 0) {
+      this.showNotification(
+        `✅ Import réussi ! ${successCount} source(s) créée(s)`,
+        'success'
+      );
+    } else {
+      const message = `⚠️ Import partiel:\n` +
+        `✅ ${successCount} réussie(s)\n` +
+        `❌ ${errorCount} échouée(s)\n\n` +
+        `Erreurs:\n${errors.join('\n')}`;
+      
+      console.error('Erreurs d\'import:', errors);
+      this.showNotification(message, 'warning');
+    }
+  }
 }
