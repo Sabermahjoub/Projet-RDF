@@ -23,6 +23,10 @@ export interface CreateDataSourceRequest {
   sourceType: 'INTERNAL' | 'EXTERNAL';
   url?: string;
   tool?: string;
+
+  filePath?: string;
+  delimiter?: string;
+  subjectColumn?: string;
 }
 
 export interface ImportRequest {
