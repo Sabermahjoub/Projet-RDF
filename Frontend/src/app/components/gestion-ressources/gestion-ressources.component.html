@@ -11,10 +11,24 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12l10 5 10-5"></path>
           </svg>
         </div>
+
         <div>
-          <h1 class="text-xl font-bold text-white tracking-tight">Gestionnaire RDF - RIC-O</h1>
-          <p class="text-xs text-blue-100">Système de gestion des données archivistiques</p>
+          <h1 *ngIf="projectName; else spinner" class="text-xl font-bold text-white tracking-tight">
+            {{ projectName }}
+          </h1>
+          <ng-template #spinner>
+            <div class="flex items-center gap-2">
+              <svg class="animate-spin h-5 w-5 text-white opacity-70" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span class="text-white opacity-50 text-sm italic">Loading...</span>
+            </div>
+          </ng-template>
+          <p class="text-xs text-blue-100">RDF Entity Management System</p>
         </div>
+
+
       </div>
 
       <!-- Right: View Tabs -->
