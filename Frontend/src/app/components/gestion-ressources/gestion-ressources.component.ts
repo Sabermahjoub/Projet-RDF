@@ -15,6 +15,7 @@ import { EntityDetailsComponent } from '../entity-details/entity-details.compone
 import { GestionRessourcesService } from '../../services/gestion-ressources.service';
 import { GestionProjetsComponent } from '../gestion-projets/gestion-projets.component';
 import { GestionProjetsService } from '../../services/gestion-projets.service';
+import { error } from 'console';
 @Component({
   selector: 'app-gestion-ressources',
   standalone: true,
@@ -44,6 +45,8 @@ import { GestionProjetsService } from '../../services/gestion-projets.service';
 })
 export class GestionRessourcesComponent implements OnInit {
   panelOpenState = signal(false);
+
+  ontologyLabels : any[] = [];
 
   projectName : string = '';
 
@@ -206,16 +209,16 @@ export class GestionRessourcesComponent implements OnInit {
     this.filteredEntityTypes = [...this.entityTypes];
     this.updateEntityTypeCounts();
     this.detailTab = 'ric';
+    
   
     this.ontologyService.getTypes().subscribe({
     next: (data) => {
-        console.log("Types d'ontology ", data);
-      },
-      error: (err) => {
-        console.error(err);
-      }
-      }
-    );
+      console.log("Types d'ontology ", data);
+      this.ontologyLabels = this.ontologyService.getOntologyLabel(data);
+      console.log("Labels d'ontology ", this.ontologyLabels);
+      this.cdr.markForCheck();
+    }
+    });
 
     this.projetService.getProject().subscribe({
     next: (data) => {
@@ -228,6 +231,15 @@ export class GestionRessourcesComponent implements OnInit {
       }
     );
   
+  }
+
+  getKey(obj: Record<string, any>): string {
+    return Object.keys(obj)[0];
+  }
+
+  getValuesOfKey(obj: Record<string, any>): any[] {
+    const key = this.getKey(obj);
+    return obj[key];
   }
 
   // Update entity type counts based on actual data
