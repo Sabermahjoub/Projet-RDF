@@ -83,18 +83,19 @@
         </div>
         
         <mat-accordion class="flex flex-col m-3! w-full!">
-          <mat-expansion-panel class="w-[90%]! bg-gray-200!" (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
+          <mat-expansion-panel *ngFor="let ontology_type of ontologyLabels" class="w-[90%]! bg-gray-200!" (opened)="panelOpenState.set(true)" (closed)="panelOpenState.set(false)">
             <mat-expansion-panel-header>
-              <mat-panel-title> RIC-O </mat-panel-title>
+              <mat-panel-title> 
+                      {{ getKey(ontology_type) }}
+              </mat-panel-title>
               <mat-panel-description>
-                ...
               </mat-panel-description>
             </mat-expansion-panel-header>
             <div class="space-y-1">
               <mat-list class="flex flex-col w-full h-full items-center justify-center">
-                <button *ngFor="let entityType of filteredEntityTypes" (click)="filterByType(entityType.type)" [class.bg-blue-50]="selectedType === entityType.type" [class.border-blue-500]="selectedType === entityType.type" [class.text-blue-700]="selectedType === entityType.type" class="w-full! flex flex-col items-center justify-between px-3 py-2.5 text-sm rounded-lg hover:bg-gray-50 transition-colors duration-150 border border-transparent group" [attr.aria-pressed]="selectedType === entityType.type">
+                <button *ngFor="let entityType of getValuesOfKey(ontology_type)" (click)="filterByType(entityType.type)" [class.bg-blue-50]="selectedType === entityType.type" [class.border-blue-500]="selectedType === entityType.type" [class.text-blue-700]="selectedType === entityType.type" class="w-full! flex flex-col items-center justify-between px-3 py-2.5 text-sm rounded-lg hover:bg-gray-50 transition-colors duration-150 border border-transparent group" [attr.aria-pressed]="selectedType === entityType.type">
                   <div class="items-center">
-                    <mat-list-item class="w-full font-medium">{{ entityType.name }}</mat-list-item>
+                    <mat-list-item class="w-full font-medium">{{ entityType }}</mat-list-item>
                   </div>
                   <mat-divider class="w-full" ></mat-divider>
                 </button>
