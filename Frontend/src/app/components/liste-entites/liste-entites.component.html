@@ -1,0 +1,150 @@
+
+<!-- Main Content -->
+    <div class="p-6">
+    <!-- Stats Bar -->
+    <div class="mb-4 flex items-center gap-4">
+        <div class="flex items-center gap-2 text-sm text-gray-600">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <span><strong>{{ listeEntities.length }}</strong> résultat(s)</span>
+        </div>
+
+        <!-- Active Filter Badge -->
+        <div *ngIf="selectedType" class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium animate-fade-in">
+        <span>Filtre: {{ selectedType }}</span>
+        <button (click)="clearTypeFilter()" class="hover:bg-blue-200 rounded-full p-0.5 transition-colors" aria-label="Effacer le filtre">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        </div>
+    </div>
+
+    <!-- Search and Actions Bar -->
+    <div class="flex items-center gap-3 mb-6 p-2!">
+        <div class="flex-1 relative">
+        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input type="text" (input)="onSearch()" placeholder="Rechercher par titre, date ou source..." class="text-center w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-gray-400 transition-all" aria-label="Rechercher des entités">
+        <button *ngIf="searchQuery" (click)="clearSearch()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors" aria-label="Effacer la recherche">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        </div>
+
+        <div class="flex items-center gap-2">
+        <button (click)="toggleSortOrder()" class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors group" [attr.aria-label]="sortAscending ? 'Trier par ordre décroissant' : 'Trier par ordre croissant'">
+            <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-800 transition-transform" [class.rotate-180]="!sortAscending" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path>
+            </svg>
+        </button>
+
+        <button class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" aria-label="Filtres avancés">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+            </svg>
+        </button>
+
+        <button class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" aria-label="Exporter les données">
+            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+        </button>
+        </div>
+
+        <button (click)="openCreateRessourceDialog()" 
+            [disabled]="!selectedType" 
+                class="flex items-center gap-2 !p-1 bg-blue-600 text-white rounded-lg 
+                transition-all text-sm font-medium shadow-sm transform duration-200
+                hover:bg-blue-700 hover:shadow-md hover:scale-105
+                disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        <span class="p-0.5!">New {{ selectedType }}</span>
+        </button>
+    </div>
+
+    <!-- Table View -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+                <th (click)="sortBy('titre')" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                <div class="flex items-center gap-2">
+                    <span>Titre</span>
+                    <svg *ngIf="sortColumn === 'titre'" class="w-4 h-4" [class.rotate-180]="!sortAscending" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                    </svg>
+                </div>
+                </th>
+                <th (click)="sortBy('date')" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                <div class="flex items-center gap-2">
+                    <span>Date</span>
+                    <svg *ngIf="sortColumn === 'date'" class="w-4 h-4" [class.rotate-180]="!sortAscending" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                    </svg>
+                </div>
+                </th>
+                <th (click)="sortBy('source')" class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors">
+                <div class="flex items-center gap-2">
+                    <span>Source</span>
+                    <svg *ngIf="sortColumn === 'source'" class="w-4 h-4" [class.rotate-180]="!sortAscending" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                    </svg>
+                </div>
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+            <tr *ngFor="let entity of listeEntities; trackBy: trackByEntityId" (click)="selectEntity(entity)" [class.bg-blue-50]="selectedEntity?.id === entity.id" class="hover:bg-gray-50 cursor-pointer transition-colors group">
+                <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                    </svg>
+                    {{ entity.titre }}
+                </div>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">{{ entity.date }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                    {{ entity.source }}
+                </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">{{ entity.type }}</td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="listeEntities.length === 0" class="py-16 text-center">
+        <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <h3 class="mt-4 text-sm font-medium text-gray-900">Aucun résultat trouvé</h3>
+        <p class="mt-2 text-sm text-gray-500">Essayez de modifier vos critères de recherche ou de supprimer les filtres.</p>
+        <button *ngIf="selectedType || searchQuery" (click)="clearAllFilters()" class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            Effacer tous les filtres
+        </button>
+        </div>
+    </div>
+
+    <!-- Placeholder for other views -->
+    <!-- <div *ngIf="activeView !== 'tableau'" class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+        <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-gray-900">Vue {{ activeView }} en développement</h3>
+        <p class="mt-2 text-sm text-gray-500">Cette fonctionnalité sera bientôt disponible.</p>
+    </div> -->
+    </div>
