@@ -11,6 +11,7 @@ import { CreateRessourceComponent } from '../create-ressource/create-ressource.c
 import {Entity, EntityType } from '../../models/ressource';
 
 import { EntityDetailsComponent } from '../entity-details/entity-details.component';
+import { ListeEntitesComponent } from '../liste-entites/liste-entites.component';
 
 import { GestionRessourcesService } from '../../services/gestion-ressources.service';
 import { GestionProjetsComponent } from '../gestion-projets/gestion-projets.component';
@@ -19,15 +20,14 @@ import { error } from 'console';
 @Component({
   selector: 'app-gestion-ressources',
   standalone: true,
-  imports: [CommonModule, 
-    FormsModule, 
-    ReactiveFormsModule, 
+  imports: [CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
     MatExpansionModule,
     MatDividerModule,
     MatListModule,
     MatDialogModule,
-    EntityDetailsComponent
-  ],
+    EntityDetailsComponent, ListeEntitesComponent],
   templateUrl: './gestion-ressources.component.html',
   styleUrl: './gestion-ressources.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -183,26 +183,15 @@ export class GestionRessourcesComponent implements OnInit {
   selectedEntity: Entity | null = null;
   previousSelectedEntity: Entity | null = null;
   selectedType: Entity['type'] | null = null;
-  searchQuery: string = '';
-  typeSearchQuery: string = '';
   activeView: 'tableau' | 'graphe' | 'sources' | 'sparql' = 'tableau';
   detailTab: 'ric' | 'foaf' | 'metadata' = 'ric';
-  
-  // Sorting
-  sortColumn: 'titre' | 'date' | 'source' | null = null;
-  sortAscending: boolean = true;
 
   showPersonForm: boolean = false;
 
   constructor(private dialog: MatDialog, private ontologyService: GestionRessourcesService,
-     private projetService: GestionProjetsService,
-      private cdr: ChangeDetectorRef) {}
-
-  openCreateRessourceDialog() {
-    this.dialog.open(CreateRessourceComponent, {
-      width: '600px'
-    });
-  }
+    private projetService: GestionProjetsService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.filteredEntities = [...this.allEntities];
@@ -254,107 +243,6 @@ export class GestionRessourcesComponent implements OnInit {
     return this.allEntities.length;
   }
 
-  // Filter by entity type
-  filterByType(type: Entity['type']) {
-    if (this.selectedType === type) {
-      this.selectedType = null;
-      this.applyAllFilters();
-    } else {
-      this.selectedType = type;
-      this.applyAllFilters();
-    }
-  }
-
-  // Search in entity types
-  onTypeSearch() {
-    const query = this.typeSearchQuery.toLowerCase().trim();
-    if (query) {
-      this.filteredEntityTypes = this.entityTypes.filter(et =>
-        et.name.toLowerCase().includes(query)
-      );
-    } else {
-      this.filteredEntityTypes = [...this.entityTypes];
-    }
-  }
-
-  // Search functionality
-  onSearch() {
-    this.applyAllFilters();
-  }
-
-  // Clear search
-  clearSearch() {
-    this.searchQuery = '';
-    this.applyAllFilters();
-  }
-
-  // Apply all filters (type + search + sort)
-  applyAllFilters() {
-    let entities = [...this.allEntities];
-
-    // Filter by type
-    if (this.selectedType) {
-      entities = entities.filter(e => e.type === this.selectedType);
-    }
-
-    // Filter by search query
-    if (this.searchQuery.trim()) {
-      const query = this.searchQuery.toLowerCase();
-      entities = entities.filter(e =>
-        e.titre.toLowerCase().includes(query) ||
-        e.date.toLowerCase().includes(query) ||
-        e.source.toLowerCase().includes(query) ||
-        e.type.toLowerCase().includes(query)
-      );
-    }
-
-    // Apply sorting
-    if (this.sortColumn) {
-      entities = this.sortEntities(entities, this.sortColumn);
-    }
-
-    this.filteredEntities = entities;
-  }
-
-  // Sort entities
-  sortEntities(entities: Entity[], column: 'titre' | 'date' | 'source'): Entity[] {
-    return entities.sort((a, b) => {
-      let compareA = a[column].toLowerCase();
-      let compareB = b[column].toLowerCase();
-
-      if (column === 'date') {
-        // Sort dates chronologically
-        compareA = new Date(a.date).getTime().toString();
-        compareB = new Date(b.date).getTime().toString();
-      }
-
-      if (this.sortAscending) {
-        return compareA > compareB ? 1 : -1;
-      } else {
-        return compareA < compareB ? 1 : -1;
-      }
-    });
-  }
-
-  // Sort by column
-  sortBy(column: 'titre' | 'date' | 'source') {
-    if (this.sortColumn === column) {
-      this.sortAscending = !this.sortAscending;
-    } else {
-      this.sortColumn = column;
-      this.sortAscending = true;
-    }
-    this.applyAllFilters();
-  }
-
-  // Toggle sort order
-  toggleSortOrder() {
-    this.sortAscending = !this.sortAscending;
-    if (this.sortColumn) {
-      this.applyAllFilters();
-    }
-  }
-
   backToPreviousEntity() {
     if (this.previousSelectedEntity) {
       const prev = this.previousSelectedEntity;
@@ -372,22 +260,6 @@ export class GestionRessourcesComponent implements OnInit {
   selectEntity(entity: Entity) {
     this.selectedEntity = entity;
     this.detailTab = 'ric';
-  }
-
-  // Clear type filter
-  clearTypeFilter() {
-    this.selectedType = null;
-    this.applyAllFilters();
-  }
-
-  // Clear all filters
-  clearAllFilters() {
-    this.selectedType = null;
-    this.searchQuery = '';
-    this.typeSearchQuery = '';
-    this.sortColumn = null;
-    this.filteredEntityTypes = [...this.entityTypes];
-    this.applyAllFilters();
   }
 
 
@@ -447,8 +319,5 @@ export class GestionRessourcesComponent implements OnInit {
     this.activeView = view;
   }
 
-  // TrackBy function for performance
-  trackByEntityId(index: number, entity: Entity): string {
-    return entity.id;
-  }
+
 }
