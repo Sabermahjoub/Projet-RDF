@@ -79,7 +79,7 @@
       <div class="p-4">
         <div class="flex items-center justify-between mb-3">
           <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">All RDF dictionaries types</h2>
-          <span class="text-xs text-gray-400 font-medium">{{ getTotalCount() }}</span>
+          <span class="text-xs text-gray-400 font-medium">{{ formattedEntities?.length }}</span>
         </div>
         
         <mat-accordion class="flex flex-col m-3! w-full!">
@@ -93,9 +93,9 @@
             </mat-expansion-panel-header>
             <div class="space-y-1">
               <mat-list class="flex flex-col w-full h-full items-center justify-center">
-                <button *ngFor="let entityType of getValuesOfKey(ontology_type)" [class.bg-blue-50]="selectedType === entityType.type" [class.border-blue-500]="selectedType === entityType.type" [class.text-blue-700]="selectedType === entityType.type" class="w-full! flex flex-col items-center justify-between px-3 py-2.5 text-sm rounded-lg hover:bg-gray-50 transition-colors duration-150 border border-transparent group" [attr.aria-pressed]="selectedType === entityType.type">
-                  <div class="items-center">
-                    <mat-list-item class="w-full font-medium">{{ entityType }}</mat-list-item>
+                <button *ngFor="let entityType of getValuesOfKey(ontology_type)" [class.bg-blue-50]="selectedType === entityType.type" [class.border-blue-500]="selectedType === entityType.type" [class.text-blue-700]="selectedType === entityType.type" class="cursor-pointer! w-full! flex flex-col items-center justify-between px-3 py-2.5 text-sm rounded-lg hover:bg-gray-50 transition-colors duration-150 border border-transparent group" [attr.aria-pressed]="selectedType === entityType.type">
+                  <div class="cursor-pointer! items-center">
+                    <mat-list-item class="w-full font-medium" (click)="getAllEntitiesByPath(getKey(ontology_type), entityType)">{{ entityType }}</mat-list-item>
                   </div>
                   <mat-divider class="w-full" ></mat-divider>
                 </button>
@@ -109,7 +109,7 @@
 
 
         <!-- No results message for type search typeSearchQuery &&  -->
-        <div *ngIf="filteredEntityTypes.length === 0" class="text-center py-8">
+        <div *ngIf="ontologyLabels.length === 0" class="text-center py-8">
           <svg class="mx-auto h-8 w-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
@@ -120,8 +120,7 @@
 
     <div  *ngIf="activeView === 'tableau'" class="p-0! w-[85%]!" [@slideIn]>
       <div class="p-1! flex-1 overflow-y-auto bg-gray-50 ">
-        <app-liste-entites></app-liste-entites>
-
+        <app-liste-entites *ngIf="formattedEntities" [allEntities]="formattedEntities"></app-liste-entites>
       </div>    
     </div>
 
