@@ -46,143 +46,16 @@ import { error } from 'console';
 export class GestionRessourcesComponent implements OnInit {
   panelOpenState = signal(false);
 
+  formattedEntities : any[] = [];
+
   ontologyLabels : any[] = [];
 
   projectName : string = '';
 
-  // Entity Types for Sidebar
-  entityTypes: EntityType[] = [
-    { name: 'Event', icon: 'calendar', count: 2, type: 'Event' },
-    { name: 'Person', icon: 'user', count: 3, type: 'Person' },
-    { name: 'Record', icon: 'file-text', count: 2, type: 'Record' },
-    { name: 'Instantiation', icon: 'copy', count: 2, type: 'Instantiation' },
-    { name: 'Agent', icon: 'users', count: 1, type: 'Agent' },
-    { name: 'Place', icon: 'map-pin', count: 2, type: 'Place' },
-    { name: 'Record Resource', icon: 'archive', count: 1, type: 'Record Resource' }
-  ];
-
-  // Mock Data - Expanded
-  allEntities: Entity[] = [
-    {
-      id: '1',
-      titre: 'Marie Curie',
-      date: '1867-11-07',
-      source: 'Manuel',
-      statut: 'complet',
-      type: 'Person',
-      birthDate: '07/11/1867',
-      deathDate: '04/07/1934',
-      associatedWith: [2, 11]
-    },
-    {
-      id: '2',
-      titre: 'Pierre Curie',
-      date: '1859-05-15',
-      source: 'Manuel',
-      statut: 'partiel',
-      type: 'Person',
-      birthDate: '15/05/1859',
-      deathDate: '19/04/1906',
-      associatedWith: [1]
-    },
-    {
-      id: '3',
-      titre: 'Découverte du Radium',
-      date: '1898-12-26',
-      source: 'Archives scientifiques',
-      statut: 'complet',
-      type: 'Event'
-    },
-    {
-      id: '4',
-      titre: 'Laboratoire Curie',
-      date: '1914-07-31',
-      source: 'Archives institutionnelles',
-      statut: 'complet',
-      type: 'Place'
-    },
-    {
-      id: '5',
-      titre: 'Notes de recherche 1898',
-      date: '1898-01-01',
-      source: 'Automatique',
-      statut: 'partiel',
-      type: 'Record'
-    },
-    {
-      id: '6',
-      titre: 'Prix Nobel de Physique',
-      date: '1903-12-10',
-      source: 'Archives Nobel',
-      statut: 'complet',
-      type: 'Event'
-    },
-    {
-      id: '7',
-      titre: 'Institut Curie',
-      date: '1909-01-01',
-      source: 'Archives institutionnelles',
-      statut: 'complet',
-      type: 'Agent'
-    },
-    {
-      id: '8',
-      titre: 'Manuscrit original - Radioactivité',
-      date: '1902-05-15',
-      source: 'Bibliothèque nationale',
-      statut: 'complet',
-      type: 'Instantiation'
-    },
-    {
-      id: '9',
-      titre: 'Correspondance scientifique',
-      date: '1900-01-01',
-      source: 'Automatique',
-      statut: 'partiel',
-      type: 'Record Resource'
-    },
-    {
-      id: '10',
-      titre: 'Photographie de laboratoire',
-      date: '1905-03-20',
-      source: 'Manuel',
-      statut: 'complet',
-      type: 'Instantiation'
-    },
-    {
-      id: '11',
-      titre: 'Irène Joliot-Curie',
-      date: '1897-09-12',
-      source: 'Manuel',
-      statut: 'complet',
-      type: 'Person',
-      birthDate: '12/09/1897',
-      deathDate: '17/03/1956',
-      associatedWith: ['Marie Curie', 'Frédéric Joliot-Curie']
-    },
-    {
-      id: '12',
-      titre: 'Université de Paris',
-      date: '1896-01-01',
-      source: 'Archives universitaires',
-      statut: 'complet',
-      type: 'Place'
-    },
-    {
-      id: '13',
-      titre: 'Journal de recherche 1903',
-      date: '1903-06-15',
-      source: 'Automatique',
-      statut: 'partiel',
-      type: 'Record'
-    }
-  ];
-
-  filteredEntities: Entity[] = [];
   filteredEntityTypes: EntityType[] = [];
   selectedEntity: Entity | null = null;
   previousSelectedEntity: Entity | null = null;
-  selectedType: Entity['type'] | null = null;
+  selectedType: string | null = null;
   activeView: 'tableau' | 'graphe' | 'sources' | 'sparql' = 'tableau';
   detailTab: 'ric' | 'foaf' | 'metadata' = 'ric';
 
@@ -194,9 +67,9 @@ export class GestionRessourcesComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.filteredEntities = [...this.allEntities];
-    this.filteredEntityTypes = [...this.entityTypes];
-    this.updateEntityTypeCounts();
+    // this.filteredEntities = [...this.allEntities];
+    // this.filteredEntityTypes = [...this.entityTypes];
+    // this.updateEntityTypeCounts();
     this.detailTab = 'ric';
     
   
@@ -232,16 +105,16 @@ export class GestionRessourcesComponent implements OnInit {
   }
 
   // Update entity type counts based on actual data
-  updateEntityTypeCounts() {
-    this.entityTypes.forEach(entityType => {
-      entityType.count = this.allEntities.filter(e => e.type === entityType.type).length;
-    });
-  }
+  // updateEntityTypeCounts() {
+  //   this.entityTypes.forEach(entityType => {
+  //     entityType.count = this.allEntities.filter(e => e.type === entityType.type).length;
+  //   });
+  // }
 
   // Get total count of entities
-  getTotalCount(): number {
-    return this.allEntities.length;
-  }
+  // getTotalCount(): number {
+  //   return this.allEntities.length;
+  // }
 
   backToPreviousEntity() {
     if (this.previousSelectedEntity) {
@@ -251,10 +124,38 @@ export class GestionRessourcesComponent implements OnInit {
     }
   }
 
-  getEntityById(id: number): Entity | undefined {
-    const id_str = id.toString();
-    return this.allEntities.find(entity => entity.id === id_str);
+  // to be returned to the child component
+  // get formattedEntities(): Record<string, any[]> {
+  //   return this.selectedType
+  //     ? { [this.selectedType]: this.allEntities }
+  //     : {};
+  // }
+
+
+  getAllEntitiesByPath(ontology_name : string ,entity_type: string) : void {
+    this.selectedType = entity_type;
+    const typeUrl = this.ontologyService.getTypeUrlByName(ontology_name ?? '');
+    if (typeUrl) {
+      this.ontologyService.getAllEntitiesByType(typeUrl+entity_type).subscribe({
+        next: (data : any) => {
+          console.log("Entities for type ", entity_type, " : ", data);  
+          // this.allEntities = data;
+          // this.formattedEntities = { [ontology_name]: data };
+          this.formattedEntities = data;
+          this.cdr.markForCheck();
+
+        },
+        error: (err : any) => {
+          console.error(err);
+        }
+      });
+    }
   }
+
+  // getEntityById(id: number): Entity | undefined {
+  //   const id_str = id.toString();
+  //   return this.allEntities.find(entity => entity.id === id_str);
+  // }
 
   // Select entity
   selectEntity(entity: Entity) {
@@ -284,7 +185,7 @@ export class GestionRessourcesComponent implements OnInit {
     // TODO: Implement export functionality (CSV, JSON, etc.)
     
     // Simple JSON download example
-    const dataStr = JSON.stringify(this.filteredEntities, null, 2);
+    const dataStr = JSON.stringify(this.formattedEntities, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
@@ -306,12 +207,6 @@ export class GestionRessourcesComponent implements OnInit {
       'archive': 'M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4'
     };
     return icons[iconName] || icons['file-text'];
-  }
-
-  // Get icon path for entity type
-  getIconPathForType(type: Entity['type']): string {
-    const typeIcon = this.entityTypes.find(et => et.type === type);
-    return typeIcon ? this.getIconPath(typeIcon.icon) : this.getIconPath('file-text');
   }
 
   // Set active view

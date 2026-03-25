@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input,  OnChanges, SimpleChanges } from '@angular/core';
 import { Entity } from '../../models/ressource';
 import { CommonModule } from '@angular/common';
 import { CreateRessourceComponent } from '../create-ressource/create-ressource.component';
@@ -6,15 +6,19 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-liste-entites',
-  imports: [CommonModule],
+  imports: [CommonModule,MatDialogModule],
   templateUrl: './liste-entites.component.html',
   styleUrl: './liste-entites.component.scss'
 })
 export class ListeEntitesComponent {
 
-  selectedType : any = null ;
+  selectedType: string | null = '';
+  @Input() allEntities:  any [] = [];
+  // entityKey!: string;
+  // entityList!: any[];
+
+
   selectedEntity: Entity | null = null;
-  listeEntities : any[] = [];
   searchQuery: string = '';
   typeSearchQuery: string = '';
   detailTab: 'ric' | 'foaf' | 'metadata' = 'ric';
@@ -25,6 +29,17 @@ export class ListeEntitesComponent {
 
   constructor(private dialog: MatDialog) {}
 
+  // ngOnChanges(changes: SimpleChanges) {
+  //   if (changes['allEntities'] && this.allEntities) {
+  //     const entry = Object.entries(this.allEntities)[0];
+  //     if (entry) {
+  //       this.entityKey = entry[0];
+  //       this.entityList = entry[1];
+  //     }
+  //     console.log('ENTRY:', entry);
+  //   }
+  // }
+
   openCreateRessourceDialog() {
     this.dialog.open(CreateRessourceComponent, {
       width: '600px'
@@ -33,7 +48,7 @@ export class ListeEntitesComponent {
 
    // Get total count of entities
   getTotalCount(): number {
-    return this.listeEntities.length;
+    return this.allEntities.length;
   }
 
   clearTypeFilter() {
@@ -43,12 +58,12 @@ export class ListeEntitesComponent {
 
   // Clear all filters
   clearAllFilters() {
-    this.selectedType = null;
-    this.searchQuery = '';
-    this.typeSearchQuery = '';
-    this.sortColumn = null;
-    this.listeEntities = [...this.listeEntities];
-    this.applyAllFilters();
+    // this.selectedType = null;
+    // this.searchQuery = '';
+    // this.typeSearchQuery = '';
+    // this.sortColumn = null;
+    // this.entityList = [...this.entityList];
+    // this.applyAllFilters();
   }
 
   // TrackBy function for performance
@@ -61,7 +76,6 @@ export class ListeEntitesComponent {
     this.selectedEntity = entity;
     this.detailTab = 'ric';
   }
-  
 
 
   // Filter by entity type
@@ -77,14 +91,14 @@ export class ListeEntitesComponent {
 
   // Search in entity types
   onTypeSearch() {
-    const query = this.typeSearchQuery.toLowerCase().trim();
-    if (query) {
-      this.listeEntities = this.listeEntities.filter(et =>
-        et.name.toLowerCase().includes(query)
-      );
-    } else {
-      this.listeEntities = [...this.listeEntities];
-    }
+    // const query = this.typeSearchQuery.toLowerCase().trim();
+    // if (query) {
+    //   this.entityList = this.entityList.filter(et =>
+    //     et.name.toLowerCase().includes(query)
+    //   );
+    // } else {
+    //   this.entityList = [...this.entityList];
+    // }
   }
 
   // Search functionality
@@ -100,30 +114,30 @@ export class ListeEntitesComponent {
 
   // Apply all filters (type + search + sort)
   applyAllFilters() {
-    let entities = [...this.listeEntities];
+    // let entities = [...this.entityList];
 
-    // Filter by type
-    if (this.selectedType) {
-      entities = entities.filter(e => e.type === this.selectedType);
-    }
+    // // Filter by type
+    // if (this.selectedType) {
+    //   entities = entities.filter(e => e.type === this.selectedType);
+    // }
 
-    // Filter by search query
-    if (this.searchQuery.trim()) {
-      const query = this.searchQuery.toLowerCase();
-      entities = entities.filter(e =>
-        e.titre.toLowerCase().includes(query) ||
-        e.date.toLowerCase().includes(query) ||
-        e.source.toLowerCase().includes(query) ||
-        e.type.toLowerCase().includes(query)
-      );
-    }
+    // // Filter by search query
+    // if (this.searchQuery.trim()) {
+    //   const query = this.searchQuery.toLowerCase();
+    //   entities = entities.filter(e =>
+    //     e.titre.toLowerCase().includes(query) ||
+    //     e.date.toLowerCase().includes(query) ||
+    //     e.source.toLowerCase().includes(query) ||
+    //     e.type.toLowerCase().includes(query)
+    //   );
+    // }
 
-    // Apply sorting
-    if (this.sortColumn) {
-      entities = this.sortEntities(entities, this.sortColumn);
-    }
+    // // Apply sorting
+    // if (this.sortColumn) {
+    //   entities = this.sortEntities(entities, this.sortColumn);
+    // }
 
-    this.listeEntities = entities;
+    // this.entityList = entities;
   }
 
   // Sort entities
