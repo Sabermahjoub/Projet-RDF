@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ONTOLOGY_LABELS } from '../models/ontology-labels';
 
@@ -9,6 +9,7 @@ import { ONTOLOGY_LABELS } from '../models/ontology-labels';
 export class GestionRessourcesService {
   private apiUrl = 'http://localhost:8080/sparql';
   private ontologyUrl = 'http://localhost:8080/ontology';
+  private rdfUrl = 'http://localhost:8080/rdf';
   constructor(private http: HttpClient) { }
 
   getOntologyLabel(listeIris : string[] ) : any[] {
@@ -54,6 +55,15 @@ export class GestionRessourcesService {
     return this.http.get<any>(`${this.ontologyUrl}/types`);  
   }
 
+  getTypeUrlByName(ontologyName: string): string {
+    const entry = Object.entries(ONTOLOGY_LABELS).find(([_, label]) => label === ontologyName);
+    return entry ? entry[0] : '';
+  }
+
+  getAllEntitiesByType(typeUrl: string): Observable<any> {
+    const params = new HttpParams().set('type', typeUrl);
+    return this.http.get<any>(`${this.rdfUrl}/entities`, {params});
+  }
   // getTypes(): Observable<any> {
 
   //   const object = {

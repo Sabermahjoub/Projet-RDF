@@ -1,4 +1,3 @@
-
 <!-- Main Content -->
     <div class="p-6">
     <!-- Stats Bar -->
@@ -7,7 +6,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
         </svg>
-        <span><strong>{{ listeEntities.length }}</strong> résultat(s)</span>
+        <span><strong>{{ allEntities.length }}</strong> résultat(s)</span>
         </div>
 
         <!-- Active Filter Badge -->
@@ -98,17 +97,17 @@
                     </svg>
                 </div>
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Edit Access</th>
             </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-            <tr *ngFor="let entity of listeEntities; trackBy: trackByEntityId" (click)="selectEntity(entity)" [class.bg-blue-50]="selectedEntity?.id === entity.id" class="hover:bg-gray-50 cursor-pointer transition-colors group">
+            <tr *ngFor="let entity of allEntities; trackBy: trackByEntityId" (click)="selectEntity(entity)" [class.bg-blue-50]="selectedEntity?.id === entity.id" class="hover:bg-gray-50 cursor-pointer transition-colors group">
                 <td class="px-6 py-4 text-sm font-medium text-gray-900">
                 <div class="flex items-center gap-2">
                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
                     </svg>
-                    {{ entity.titre }}
+                    {{ entity.label }}
                 </div>
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-600">{{ entity.date }}</td>
@@ -117,14 +116,23 @@
                     {{ entity.source }}
                 </span>
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-600">{{ entity.type }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600">
+                    <span
+                        class="px-2.5 py-0.5 rounded-full text-xs font-medium"
+                        [ngClass]="entity.editable 
+                            ? 'bg-green-500 text-white' 
+                            : 'bg-red-500 text-white'"
+                        >
+                        {{ entity.editable ? 'Editable' : 'Locked' }}
+                        </span>
+                </td>
             </tr>
             </tbody>
         </table>
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="listeEntities.length === 0" class="py-16 text-center">
+        <div *ngIf="allEntities.length === 0" class="py-16 text-center">
         <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
         </svg>
