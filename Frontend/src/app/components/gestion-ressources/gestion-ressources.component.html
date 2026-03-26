@@ -142,15 +142,15 @@
 
     <div  *ngIf="activeView === 'tableau'" class="p-0! w-[85%]!" [@slideIn]>
       <div class="p-1! flex-1 overflow-y-auto bg-gray-50 ">
-        <app-liste-entites *ngIf="formattedEntities" [allEntities]="formattedEntities"></app-liste-entites>
+        <app-liste-entites *ngIf="formattedEntities" [allEntities]="formattedEntities" (selectedEntity)="handleChildData($event)"></app-liste-entites>
       </div>    
     </div>
 
     <!-- Detail Panel -->
-    <aside *ngIf="selectedEntity" [@slideIn] class="w-96 bg-white border-l border-gray-200 overflow-y-auto shadow-xl">
+    <aside *ngIf="selectedEntity" [@slideIn] class="w-150! bg-white border-l border-gray-200 overflow-y-auto shadow-xl">
 
       <div class="p-6">
-        <app-entity-details></app-entity-details>
+        <app-entity-details  [selectedEntityId]="selectedEntity.entityKey"></app-entity-details>
       </div>
 
     </aside>
