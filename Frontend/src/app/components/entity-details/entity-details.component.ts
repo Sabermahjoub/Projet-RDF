@@ -1,23 +1,31 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Entity } from '../../models/ressource';
 import { allEntities } from '../../models/ressource';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 
+import {GestionRessourcesService} from '../../services/gestion-ressources.service';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-entity-details',
+  standalone: true,
   imports: [CommonModule, FormsModule, ReactiveFormsModule, MatDialogModule],
   templateUrl: './entity-details.component.html',
   styleUrl: './entity-details.component.scss'
 })
-export class EntityDetailsComponent implements OnInit {
+export class EntityDetailsComponent implements OnInit, OnChanges {
 
-  selectedEntity: Entity | null = null;
+  @Input() selectedEntityId: string = "";  
+  selectedEntity : any = null ;
   previousSelectedEntity: Entity | null = null;
   detailTab: 'ric' | 'foaf' | 'metadata' = 'ric';
   myNewEntites : Entity[] = [];
+
+  private gestionRessourceService = inject(GestionRessourcesService); // ← replace constructor injection
+  private cdr = inject(ChangeDetectorRef); // ← add this
+
+  // constructor(private gestionRessourceService : GestionRessourcesService ) {}
 
   copyToClipboard(text: string | undefined) {
     if (text && navigator.clipboard) {
@@ -30,28 +38,33 @@ export class EntityDetailsComponent implements OnInit {
     }
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+
+    if (changes['selectedEntityId'] && this.selectedEntityId) {
+      this.gestionRessourceService
+        .getEntityDetails(this.selectedEntityId)
+        .subscribe({
+          next: (data) => {
+            console.log("DATA:", data);
+            this.selectedEntity = data;
+            this.cdr.markForCheck();
+          },
+          error: (err) => console.error("ERROR:", err)
+        });
+    }
+  }
+
   ngOnInit(): void {
-     this.selectedEntity = {
-      id: '1',
-      titre: 'Marie Curie',
-      date: '1867-11-07',
-      source: 'Manuel',
-      statut: 'complet',
-      type: 'Person',
-      birthDate: '07/11/1867',
-      deathDate: '04/07/1934',
-      associatedWith: [2, 11]
-    };
+
     this.detailTab = 'ric';
     this.myNewEntites = allEntities;
-
   }
 
 
   // Remove association
   removeAssociation(person: string) {
     if (this.selectedEntity && this.selectedEntity.associatedWith) {
-      this.selectedEntity.associatedWith = this.selectedEntity.associatedWith.filter(p => p !== person);
+      this.selectedEntity.associatedWith = this.selectedEntity.associatedWith.filter((p : any) => p !== person);
     }
   }
 

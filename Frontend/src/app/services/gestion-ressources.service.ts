@@ -55,6 +55,8 @@ export class GestionRessourcesService {
     return this.http.get<any>(`${this.ontologyUrl}/types`);  
   }
 
+  
+
   getTypeUrlByName(ontologyName: string): string {
     const entry = Object.entries(ONTOLOGY_LABELS).find(([_, label]) => label === ontologyName);
     return entry ? entry[0] : '';
@@ -63,6 +65,11 @@ export class GestionRessourcesService {
   getAllEntitiesByType(typeUrl: string): Observable<any> {
     const params = new HttpParams().set('type', typeUrl);
     return this.http.get<any>(`${this.rdfUrl}/entities`, {params});
+  }
+
+  getEntityDetails(entityKey: string): Observable<any> {
+    const params = new HttpParams().set('key', entityKey);
+    return this.http.get<any>(`${this.rdfUrl}/entity`, {params});
   }
   // getTypes(): Observable<any> {
 
