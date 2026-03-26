@@ -53,7 +53,7 @@ export class GestionRessourcesComponent implements OnInit {
   projectName : string = '';
 
   filteredEntityTypes: EntityType[] = [];
-  selectedEntity: Entity | null = null;
+  selectedEntity: any | null = null;
   previousSelectedEntity: Entity | null = null;
   selectedType: string | null = null;
   activeView: 'tableau' | 'graphe' | 'sources' | 'sparql' = 'tableau';
@@ -97,6 +97,13 @@ export class GestionRessourcesComponent implements OnInit {
 
   getKey(obj: Record<string, any>): string {
     return Object.keys(obj)[0];
+  }
+
+  handleChildData(data: any) {
+    console.log('Received from child:', data);
+      this.selectedEntity = { ...data }; // nouvelle ref
+    this.detailTab = 'ric';
+    this.cdr.markForCheck();             // 🔥 très important
   }
 
   getValuesOfKey(obj: Record<string, any>): any[] {
@@ -160,7 +167,6 @@ export class GestionRessourcesComponent implements OnInit {
   // Select entity
   selectEntity(entity: Entity) {
     this.selectedEntity = entity;
-    this.detailTab = 'ric';
   }
 
 
