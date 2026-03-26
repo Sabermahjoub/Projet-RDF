@@ -1,4 +1,4 @@
-import { Component, OnInit, Input,  OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Entity } from '../../models/ressource';
 import { CommonModule } from '@angular/common';
 import { CreateRessourceComponent } from '../create-ressource/create-ressource.component';
@@ -14,14 +14,14 @@ export class ListeEntitesComponent {
 
   selectedType: string | null = '';
   @Input() allEntities:  any [] = [];
+  @Output() selectedEntity = new EventEmitter<any>();
   // entityKey!: string;
   // entityList!: any[];
 
 
-  selectedEntity: Entity | null = null;
+  // selectedEntity: Entity | null = null;
   searchQuery: string = '';
   typeSearchQuery: string = '';
-  detailTab: 'ric' | 'foaf' | 'metadata' = 'ric';
 
   // Sorting
   sortColumn: 'titre' | 'date' | 'source' | null = null;
@@ -29,26 +29,10 @@ export class ListeEntitesComponent {
 
   constructor(private dialog: MatDialog) {}
 
-  // ngOnChanges(changes: SimpleChanges) {
-  //   if (changes['allEntities'] && this.allEntities) {
-  //     const entry = Object.entries(this.allEntities)[0];
-  //     if (entry) {
-  //       this.entityKey = entry[0];
-  //       this.entityList = entry[1];
-  //     }
-  //     console.log('ENTRY:', entry);
-  //   }
-  // }
-
   openCreateRessourceDialog() {
     this.dialog.open(CreateRessourceComponent, {
       width: '600px'
     });
-  }
-
-   // Get total count of entities
-  getTotalCount(): number {
-    return this.allEntities.length;
   }
 
   clearTypeFilter() {
@@ -72,9 +56,8 @@ export class ListeEntitesComponent {
   }
 
   // Select entity
-  selectEntity(entity: Entity) {
-    this.selectedEntity = entity;
-    this.detailTab = 'ric';
+  selectEntity(entity: any) {
+    this.selectedEntity.emit(entity);
   }
 
 
