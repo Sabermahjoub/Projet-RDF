@@ -1,1 +1,538 @@
-<p class="text-red-500"> Salut Vitor</p>
+<!-- src/app/components/gestion-projets/gestion-projets.component.html -->
+
+<div class="flex flex-col h-screen bg-gray-50">
+
+  <!-- ══════════════════════════════════════════════════════════
+       HEADER
+  ══════════════════════════════════════════════════════════ -->
+  <header class="bg-gradient-to-r from-blue-900 to-blue-600 shadow-lg">
+    <div class="flex items-center justify-between px-6 py-4">
+
+      <!-- Left: Logo + Title -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-center justify-center w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white tracking-tight">Gestion des Projets RDF</h1>
+          <p class="text-xs text-blue-100">Repositories RDF4J persistés sur disque</p>
+        </div>
+      </div>
+
+      <!-- Right: stats + projet actif -->
+      <div class="flex items-center gap-3">
+        <!-- Projet actif badge -->
+        <div *ngIf="activeProject" class="flex items-center gap-2 px-3 py-1.5 bg-green-500/20 border border-green-400/30 backdrop-blur-md rounded-lg">
+          <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+          <span class="text-sm text-white font-medium">{{ activeProject.name }}</span>
+          <button (click)="onCloseProject()" class="ml-1 text-white/70 hover:text-white transition-colors" title="Fermer le projet">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Count badge -->
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-lg">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+          </svg>
+          <span class="text-sm text-white font-medium">{{ projects.length }} projet(s)</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════
+       MAIN CONTENT
+  ══════════════════════════════════════════════════════════ -->
+  <main class="flex-1 overflow-y-auto bg-gray-50 p-6">
+
+    <!-- Stats Bar -->
+    <div class="mb-4 flex items-center gap-4 flex-wrap">
+      <div class="flex items-center gap-2 text-sm text-gray-600">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+        </svg>
+        <span><strong>{{ projects.length }}</strong> projet(s) dans l'historique</span>
+      </div>
+      <div *ngIf="activeProject" class="inline-flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+        <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+        <span>Projet actif : <strong>{{ activeProject.name }}</strong></span>
+      </div>
+    </div>
+
+    <!-- Actions Bar -->
+    <div class="flex items-center gap-3 mb-6 flex-wrap">
+
+      <!-- Nouveau Projet -->
+      <button
+        (click)="openCreateModal()"
+        class="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all text-sm font-medium shadow-sm hover:shadow-md transform hover:scale-105 duration-200">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span>Nouveau Projet</span>
+      </button>
+
+      <div class="flex-1"></div>
+
+      <!-- Recherche -->
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+        </svg>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+          placeholder="Rechercher un projet..."
+          class="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64">
+      </div>
+
+      <!-- Tri -->
+      <select
+        [(ngModel)]="sortField"
+        (change)="onSort()"
+        class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <option value="name">Trier par nom</option>
+        <option value="created">Trier par création</option>
+        <option value="modified">Trier par modification</option>
+      </select>
+
+      <!-- Ordre tri -->
+      <button
+        (click)="toggleSortOrder()"
+        class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        [title]="sortAsc ? 'Ordre croissant' : 'Ordre décroissant'">
+        <svg class="w-5 h-5 text-gray-600 transition-transform duration-200"
+          [class.rotate-180]="!sortAsc"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
+        </svg>
+      </button>
+
+      <!-- Rafraîchir -->
+      <button
+        (click)="refreshActiveProject()"
+        class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        title="Rafraîchir le projet actif">
+        <svg class="w-5 h-5 text-gray-600" [class.animate-spin]="isLoading" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TABLE DES PROJETS
+    ══════════════════════════════════════════════════════ -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden" *ngIf="projects.length > 0">
+
+      <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+            </svg>
+            Projets RDF
+          </h2>
+          <span class="text-sm text-gray-500">{{ filteredProjects.length }} résultat(s)</span>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nom du Projet</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Description</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Créé le</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Modifié le</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Statut</th>
+              <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr
+              *ngFor="let project of paginatedProjects"
+              (click)="selectProject(project)"
+              [class.bg-blue-50]="selectedProject?.name === project.name"
+              [class.border-l-4]="activeProject?.name === project.name"
+              [class.border-l-green-500]="activeProject?.name === project.name"
+              class="hover:bg-gray-50 cursor-pointer transition-colors group">
+
+              <!-- Nom -->
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 flex-shrink-0">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                    </svg>
+                  </div>
+                  <span class="text-sm font-medium text-gray-900">{{ project.name }}</span>
+                </div>
+              </td>
+
+              <!-- Description -->
+              <td class="px-6 py-4 text-sm text-gray-600 max-w-xs">
+                <span *ngIf="project.description" class="truncate block" [title]="project.description">
+                  {{ project.description }}
+                </span>
+                <span *ngIf="!project.description" class="text-gray-400 italic text-xs">Aucune description</span>
+              </td>
+
+              <!-- Créé -->
+              <td class="px-6 py-4 text-sm text-gray-600">
+                <span *ngIf="project.created">{{ project.created | date:'dd/MM/yyyy' }}</span>
+                <span *ngIf="!project.created" class="text-gray-400">-</span>
+              </td>
+
+              <!-- Modifié -->
+              <td class="px-6 py-4 text-sm text-gray-600">
+                <span *ngIf="project.modified">{{ project.modified | date:'dd/MM/yyyy HH:mm' }}</span>
+                <span *ngIf="!project.modified" class="text-gray-400">-</span>
+              </td>
+
+              <!-- Statut -->
+              <td class="px-6 py-4">
+                <span *ngIf="activeProject?.name === project.name"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                  <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                  Actif
+                </span>
+                <span *ngIf="activeProject?.name !== project.name"
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                  Fermé
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+
+                  <!-- Ouvrir -->
+                  <button
+                    (click)="onOpenProject(project); $event.stopPropagation()"
+                    [disabled]="activeProject?.name === project.name || isLoading"
+                    class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    [title]="activeProject?.name === project.name ? 'Projet déjà actif' : 'Ouvrir ce projet'">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l14 9-14 9V3z"/>
+                    </svg>
+                    Ouvrir
+                  </button>
+
+                  <!-- Supprimer de l'historique -->
+                  <button
+                    (click)="removeFromHistory(project); $event.stopPropagation()"
+                    [disabled]="activeProject?.name === project.name"
+                    class="text-red-500 hover:text-red-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed p-1"
+                    title="Retirer de l'historique">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Pagination ───────────────────────────────────────────── -->
+      <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+        <div class="text-sm text-gray-600">
+          Affichage <strong>{{ paginationStart + 1 }}</strong> –
+          <strong>{{ paginationEnd }}</strong> sur
+          <strong>{{ filteredProjects.length }}</strong>
+        </div>
+        <div class="flex items-center gap-2">
+          <button
+            (click)="prevPage()"
+            [disabled]="currentPage === 0"
+            class="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+
+          <div class="flex gap-1">
+            <button
+              *ngFor="let page of pageNumbers"
+              (click)="goToPage(page)"
+              [class.bg-blue-600]="currentPage === page"
+              [class.text-white]="currentPage === page"
+              [class.border-blue-600]="currentPage === page"
+              class="w-8 h-8 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+              {{ page + 1 }}
+            </button>
+          </div>
+
+          <button
+            (click)="nextPage()"
+            [disabled]="currentPage >= totalPages - 1"
+            class="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </button>
+
+          <!-- Items per page -->
+          <select
+            [(ngModel)]="pageSize"
+            (change)="onPageSizeChange()"
+            class="ml-3 px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option [value]="5">5 / page</option>
+            <option [value]="10">10 / page</option>
+            <option [value]="20">20 / page</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Empty State ══════════════════════════════════════════ -->
+    <div *ngIf="projects.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+      <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+      </svg>
+      <h3 class="mt-4 text-lg font-medium text-gray-900">Aucun projet</h3>
+      <p class="mt-2 text-sm text-gray-500">Créez votre premier projet RDF pour commencer</p>
+      <button
+        (click)="openCreateModal()"
+        class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nouveau Projet
+      </button>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MODAL : Créer / Ouvrir un projet
+══════════════════════════════════════════════════════════════════════════ -->
+<div *ngIf="showCreateModal"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in"
+  (click)="closeCreateModal()">
+
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 animate-slide-up"
+    (click)="$event.stopPropagation()">
+
+    <!-- Modal Header -->
+    <div class="px-6 py-5 bg-gradient-to-r from-blue-900 to-blue-600 rounded-t-2xl">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+          </svg>
+          <h2 class="text-lg font-semibold text-white">Nouveau Projet RDF</h2>
+        </div>
+        <button (click)="closeCreateModal()" class="p-1.5 hover:bg-white/20 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6">
+      <form [formGroup]="projectForm" (ngSubmit)="onSubmitProject()">
+        <div class="space-y-5">
+
+          <!-- Nom -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Nom du projet <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="name"
+              placeholder="ex: archive_2025"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
+              [class.border-red-300]="projectForm.get('name')?.invalid && projectForm.get('name')?.touched">
+            <p class="mt-1 text-xs text-gray-400">Lettres, chiffres, tirets et underscores uniquement</p>
+            <div *ngIf="projectForm.get('name')?.invalid && projectForm.get('name')?.touched"
+              class="mt-1 text-xs text-red-600">
+              Le nom est requis et ne doit contenir que des lettres, chiffres, tirets ou underscores
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <textarea
+              formControlName="description"
+              rows="3"
+              placeholder="Décrivez le contenu de ce projet RDF..."
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all resize-none">
+            </textarea>
+          </div>
+
+          <!-- Persistant -->
+          <div class="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <input
+              type="checkbox"
+              formControlName="persistent"
+              id="persistent"
+              class="mt-0.5 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
+            <div>
+              <label for="persistent" class="text-sm font-medium text-gray-700 cursor-pointer">
+                Persistance sur disque (recommandé)
+              </label>
+              <p class="text-xs text-gray-500 mt-0.5">
+                Les données seront stockées en NativeStore dans <code class="bg-white px-1 rounded">projects/{{ projectForm.get('name')?.value || 'nom' }}/store/</code>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex justify-end gap-3 mt-6 pt-5 border-t border-gray-200">
+          <button
+            type="button"
+            (click)="closeCreateModal()"
+            class="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
+            Annuler
+          </button>
+          <button
+            type="submit"
+            [disabled]="!projectForm.valid || isLoading"
+            class="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
+            <svg *ngIf="isLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            <svg *ngIf="!isLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l14 9-14 9V3z"/>
+            </svg>
+            Créer et Ouvrir
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     PANEL DETAIL (latéral)
+══════════════════════════════════════════════════════════════════════════ -->
+<aside *ngIf="selectedProject"
+  class="fixed right-0 top-0 h-full w-96 bg-white border-l border-gray-200 shadow-2xl z-40 overflow-y-auto animate-slide-in">
+
+  <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+    <div class="flex items-center gap-3">
+      <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+      </svg>
+      <h2 class="text-lg font-semibold text-gray-900 truncate">{{ selectedProject.name }}</h2>
+    </div>
+    <button (click)="closeDetail()" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+      <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="p-6 space-y-6">
+
+    <!-- Statut -->
+    <div>
+      <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Statut</label>
+      <span *ngIf="activeProject?.name === selectedProject.name"
+        class="inline-flex items-center gap-2 px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+        Projet actif
+      </span>
+      <span *ngIf="activeProject?.name !== selectedProject.name"
+        class="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-600 rounded-full text-sm font-medium">
+        <span class="w-2 h-2 bg-gray-400 rounded-full"></span>
+        Fermé
+      </span>
+    </div>
+
+    <!-- Nom -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Nom du projet</label>
+      <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+        <span class="text-sm text-gray-900 font-mono font-medium">{{ selectedProject.name }}</span>
+        <button (click)="copyToClipboard(selectedProject.name!)" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div *ngIf="selectedProject.description">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+      <p class="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg p-3">
+        {{ selectedProject.description }}
+      </p>
+    </div>
+
+    <!-- Dates -->
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Créé le</label>
+        <p class="text-sm text-gray-700">
+          <span *ngIf="selectedProject.created">{{ selectedProject.created | date:'dd/MM/yyyy' }}</span>
+          <span *ngIf="!selectedProject.created" class="text-gray-400">-</span>
+        </p>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Modifié le</label>
+        <p class="text-sm text-gray-700">
+          <span *ngIf="selectedProject.modified">{{ selectedProject.modified | date:'dd/MM/yyyy HH:mm' }}</span>
+          <span *ngIf="!selectedProject.modified" class="text-gray-400">-</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Chemin disque -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Chemin de stockage</label>
+      <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <span class="text-xs text-blue-700 font-mono">projects/{{ selectedProject.name }}/store/</span>
+      </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="pt-4 border-t border-gray-200 space-y-2">
+      <button
+        (click)="onOpenProject(selectedProject)"
+        [disabled]="activeProject?.name === selectedProject.name || isLoading"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l14 9-14 9V3z"/>
+        </svg>
+        {{ activeProject?.name === selectedProject.name ? 'Projet déjà actif' : 'Ouvrir ce projet' }}
+      </button>
+
+      <button
+        *ngIf="activeProject?.name === selectedProject.name"
+        (click)="onCloseProject()"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+        </svg>
+        Fermer le projet
+      </button>
+    </div>
+  </div>
+</aside>
