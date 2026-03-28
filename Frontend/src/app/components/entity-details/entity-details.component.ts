@@ -19,6 +19,7 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
   @Input() selectedEntityId: string = "";  
   selectedEntity : any = null ;
   previousSelectedEntity: Entity | null = null;
+  entityPropertiesDict : any[] = [];
   detailTab: 'ric' | 'foaf' | 'metadata' = 'ric';
   myNewEntites : Entity[] = [];
 
@@ -47,12 +48,34 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
           next: (data) => {
             console.log("DATA:", data);
             this.selectedEntity = data;
+            this.getEntityPropertiesDict();
             this.cdr.markForCheck();
           },
           error: (err) => console.error("ERROR:", err)
         });
     }
   }
+
+  getEntityPropertiesDict() : void {
+    const entityProperties = this.selectedEntity.properties || [];
+    let entityPropertiesDict : any [] = [];
+    if (entityProperties.length > 0) {
+      for (let prop of entityProperties) {
+        if (prop.predicate.includes('#')) {
+          let propertyName = prop.predicate.substring(prop.predicate.lastIndexOf('#') + 1, prop.predicate.length);
+          entityPropertiesDict.push({ [propertyName]: prop.value });
+        }
+        else {
+          let propertyName = prop.predicate.substring(prop.predicate.lastIndexOf('/') + 1, prop.predicate.length);
+          entityPropertiesDict.push({ [propertyName]: prop.value });
+        }
+      }
+
+    }
+    console.log("I'm here ", entityPropertiesDict);
+    this.entityPropertiesDict = entityPropertiesDict;
+  }
+
 
   ngOnInit(): void {
 
