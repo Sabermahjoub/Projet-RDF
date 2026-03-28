@@ -76,6 +76,13 @@ export class GestionRessourcesService {
     const params = new HttpParams().set('key', entityKey);
     return this.http.delete<any>(`${this.rdfUrl}/entity`, {params});
   }
+
+  editEntity(entityKey : string, newEntity : any ) : Observable<any> {
+    const params = new HttpParams().set('key', entityKey);
+    return this.http.put<any>(`${this.rdfUrl}/entity`, newEntity, {params});
+  }
+
+
   // getTypes(): Observable<any> {
 
   //   const object = {
