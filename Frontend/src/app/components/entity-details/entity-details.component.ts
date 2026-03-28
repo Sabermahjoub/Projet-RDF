@@ -63,17 +63,35 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
       for (let prop of entityProperties) {
         if (prop.predicate.includes('#')) {
           let propertyName = prop.predicate.substring(prop.predicate.lastIndexOf('#') + 1, prop.predicate.length);
-          entityPropertiesDict.push({ [propertyName]: prop.value });
+          entityPropertiesDict.push({ key: propertyName, value: prop.value, kind: prop.kind });
         }
         else {
           let propertyName = prop.predicate.substring(prop.predicate.lastIndexOf('/') + 1, prop.predicate.length);
-          entityPropertiesDict.push({ [propertyName]: prop.value });
+          entityPropertiesDict.push({ key: propertyName, value: prop.value, kind : prop.kind });
         }
       }
 
     }
     console.log("I'm here ", entityPropertiesDict);
     this.entityPropertiesDict = entityPropertiesDict;
+  }
+
+  changeSelectedEntity(entityIri : string) {
+    if (entityIri) {
+      const entityKey = entityIri.substring(entityIri.lastIndexOf('/') + 1, entityIri.length);
+      console.log("Reference entity key : ",entityKey);
+      this.previousSelectedEntity = this.selectedEntity;
+      this.gestionRessourceService.getEntityDetails(entityKey).subscribe({
+        next: (data) => {
+          console.log("DATA:", data);
+          this.selectedEntity = data;
+          this.getEntityPropertiesDict();
+          this.cdr.markForCheck();
+        },
+        error: (err) => console.error("ERROR:", err)
+      });
+    }
+
   }
 
 
@@ -106,7 +124,7 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
     }
   }
 
-    backToPreviousEntity() {
+  backToPreviousEntity() {
     if (this.previousSelectedEntity) {
       const prev = this.previousSelectedEntity;
       this.previousSelectedEntity = null;
@@ -119,10 +137,11 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
     return allEntities.find(entity => entity.id === id_str);
   }
 
-  // Select entity
-  selectEntity(entity: Entity) {
+  selectEntity(entity: any) {
     this.selectedEntity = entity;
+    this.getEntityPropertiesDict(); // ← ajouter
     this.detailTab = 'ric';
+    this.cdr.markForCheck();
   }
 
   closeDetail() {

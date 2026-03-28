@@ -59,35 +59,42 @@
     </div>
 
 
-
     <!-- Property Field -->
     <div *ngFor="let property of entityPropertiesDict" class="mb-6">
-        <div *ngFor="let item of property | keyvalue">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
-                {{ item.key }}
-                <button class="inline ml-1 text-gray-400 hover:text-gray-600" aria-label="Information">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                </button>
-            </label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+            {{ property.key }}
+            <button class="inline ml-1 text-gray-400 hover:text-gray-600" aria-label="Information">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            </button>
+        </label>
 
-            <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                        
-                <input
-                *ngIf="selectedEntity"
-                type="text"
-                [(ngModel)]="item.value"
-                
-                class="text-sm text-gray-900 font-medium w-full bg-transparent focus:outline-none"
-                />
-                <button class="text-gray-400 hover:text-gray-600 transition-colors" aria-label="Supprimer">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div> 
+        <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
 
+            <!-- Literal : champ éditable ou pas  -->
+            <input
+            *ngIf="property.kind === 'literal'"
+            type="text"
+            [(ngModel)]="property.value"
+            class="text-sm text-gray-900 font-medium w-full bg-transparent focus:outline-none"
+            />
+
+            <!-- IRI : lien cliquable -->
+            <a
+            *ngIf="property.kind === 'iri'"
+            (click)="changeSelectedEntity(property.value); $event.preventDefault()"
+            rel="noopener noreferrer"
+            class="cursor-pointer! text-sm text-blue-600 hover:text-blue-800 underline font-mono truncate w-full"
+            >
+            {{ property.value }}
+            </a>
+
+            <button class="ml-2 text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0" aria-label="Supprimer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            </button>
         </div>
 
     </div>
