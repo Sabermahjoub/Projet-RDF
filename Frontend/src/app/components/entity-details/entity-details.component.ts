@@ -250,9 +250,15 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
 
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
       if (confirmed) {
-        this.entityPropertiesDict = this.entityPropertiesDict.filter((p : any) => p.predicate !== property.predicate && p.value !== property.value); 
-        console.log("query payload : ", this.entityPropertiesDict);
+        const prop = this.entityPropertiesDict.find(
+          (p: any) => p.predicate === property.predicate
+        );
+        if (prop) {
+          prop.value = "";
+        }
+        console.log("query payload after removing property : ", this.entityPropertiesDict);
         this.editEntity(); 
+        this.entityPropertiesDict = this.entityPropertiesDict.filter((p : any) => p.predicate !== property.predicate && p.value !== property.value); 
         this.cdr.markForCheck();
 
       }
