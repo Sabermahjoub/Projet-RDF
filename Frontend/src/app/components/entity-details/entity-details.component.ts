@@ -5,14 +5,16 @@ import { allEntities } from '../../models/ressource';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 
 import {GestionRessourcesService} from '../../services/gestion-ressources.service';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatDialogModule, MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { Stack } from '../../shared/utils/stack';
+import { ConfirmDeleteDialogComponent, ConfirmDeleteDialogData } from '../confirm-delete-dialog/confirm-delete-dialog.component';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-entity-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatDialogModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, MatDialogModule, MatSnackBarModule],
   templateUrl: './entity-details.component.html',
   styleUrl: './entity-details.component.scss'
 })
@@ -22,13 +24,15 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
   stack = new Stack<any>();
 
   selectedEntity : any = null ;
-  previousSelectedEntity: Entity | null = null;
   entityPropertiesDict : any[] = [];
   detailTab: 'ric' | 'foaf' | 'metadata' = 'ric';
   myNewEntites : Entity[] = [];
 
-  private gestionRessourceService = inject(GestionRessourcesService); // ← replace constructor injection
-  private cdr = inject(ChangeDetectorRef); // ← add this
+  private gestionRessourceService = inject(GestionRessourcesService);
+  private cdr = inject(ChangeDetectorRef); 
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+
 
   // constructor(private gestionRessourceService : GestionRessourcesService ) {}
 
@@ -120,19 +124,10 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
     // TODO: Implement modal to select person to associate
   }
 
-  changeEntityView(id: any) {
-    this.previousSelectedEntity = this.selectedEntity;
-
-    const entityFound = this.getEntityById(id);
-    if (entityFound) {
-      this.selectEntity(entityFound);
-    }
-  }
 
   backToPreviousEntity() {
     if (!this.stack.isEmpty()) {
       const prev = this.stack.pop();
-      //this.previousSelectedEntity = null;
       this.selectEntity(prev);
     }
   }
@@ -153,16 +148,63 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
     this.selectedEntity = null;
   }
 
-  deleteEntity() {
-    if (this.selectedEntity && confirm(`Êtes-vous sûr de vouloir supprimer "${this.selectedEntity.titre}" ?`)) {
-      console.log('Deleting entity:', this.selectedEntity.id);
-      // TODO: Implement delete logic (API call)
+  // deleteEntity() {
+  //   if (this.selectedEntity && confirm(`Êtes-vous sûr de vouloir supprimer "${this.selectedEntity.titre}" ?`)) {
+  //     console.log('Deleting entity:', this.selectedEntity.id);
+  //     // TODO: Implement delete logic (API call)
       
-      this.myNewEntites = this.myNewEntites.filter(e => e.id !== this.selectedEntity!.id);
-      // this.applyAllFilters();
-      // this.updateEntityTypeCounts();
-      this.closeDetail();
-    }
+  //     this.myNewEntites = this.myNewEntites.filter(e => e.id !== this.selectedEntity!.id);
+  //     // this.applyAllFilters();
+  //     // this.updateEntityTypeCounts();
+  //     this.closeDetail();
+  //   }
+  // }
+
+  deleteEntity() {
+    if (!this.selectedEntity) return;
+
+    const dialogRef = this.dialog.open(ConfirmDeleteDialogComponent, {
+      data: {
+        entityLabel: this.selectedEntity.titre,
+        entityIri: this.selectedEntity.iri,
+      } as ConfirmDeleteDialogData,
+      panelClass: 'rounded-xl',
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+
+        this.gestionRessourceService.deleteEntity(this.selectedEntity.entityKey).subscribe({
+          next: () => {
+            this.snackBar.open(
+              `"${this.selectedEntity.titre}" was successfully deleted.`,
+              'Close',
+              {
+                duration: 5000,
+                horizontalPosition: 'right',
+                verticalPosition: 'bottom',
+                panelClass: ['snackbar-success']
+              }
+            );
+            console.log('Entity deleted:', this.selectedEntity.entityKey);
+            this.closeDetail();
+          },
+          error: (err : any) => {
+            console.error('Delete failed:', err)
+             this.snackBar.open(
+              `Failed to delete "${this.selectedEntity.iri}".`,
+              'Close',
+              {
+                duration: 5000,
+                horizontalPosition: 'right',
+                verticalPosition: 'bottom',
+                panelClass: ['snackbar-error']
+              }
+            );
+          }
+        });
+      }
+    });
   }
 
 }
