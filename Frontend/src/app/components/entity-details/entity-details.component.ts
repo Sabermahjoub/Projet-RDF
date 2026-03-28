@@ -7,6 +7,8 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Va
 import {GestionRessourcesService} from '../../services/gestion-ressources.service';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 
+import { Stack } from '../../shared/utils/stack';
+
 @Component({
   selector: 'app-entity-details',
   standalone: true,
@@ -17,6 +19,8 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 export class EntityDetailsComponent implements OnInit, OnChanges {
 
   @Input() selectedEntityId: string = "";  
+  stack = new Stack<any>();
+
   selectedEntity : any = null ;
   previousSelectedEntity: Entity | null = null;
   entityPropertiesDict : any[] = [];
@@ -80,7 +84,8 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
     if (entityIri) {
       const entityKey = entityIri.substring(entityIri.lastIndexOf('/') + 1, entityIri.length);
       console.log("Reference entity key : ",entityKey);
-      this.previousSelectedEntity = this.selectedEntity;
+      // this.previousSelectedEntity = this.selectedEntity;
+      this.stack.push(this.selectedEntity);
       this.gestionRessourceService.getEntityDetails(entityKey).subscribe({
         next: (data) => {
           console.log("DATA:", data);
@@ -125,9 +130,9 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
   }
 
   backToPreviousEntity() {
-    if (this.previousSelectedEntity) {
-      const prev = this.previousSelectedEntity;
-      this.previousSelectedEntity = null;
+    if (!this.stack.isEmpty()) {
+      const prev = this.stack.pop();
+      //this.previousSelectedEntity = null;
       this.selectEntity(prev);
     }
   }
