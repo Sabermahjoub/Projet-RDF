@@ -1,0 +1,12 @@
+
+:host ::ng-deep {
+  .snackbar-success .mdc-snackbar__surface {
+    background-color: #16a34a !important; // green-600
+    color: white !important;
+  }
+
+  .snackbar-error .mdc-snackbar__surface {
+    background-color: #dc2626 !important; // red-600
+    color: white !important;
+  }
+}
