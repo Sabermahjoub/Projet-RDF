@@ -9,6 +9,7 @@ import { MatDialogModule, MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angu
 
 import { Stack } from '../../shared/utils/stack';
 import { ConfirmDeleteDialogComponent, ConfirmDeleteDialogData } from '../confirm-delete-dialog/confirm-delete-dialog.component';
+import { ConfirmDeletePropertyData, ConfirmDeletePropertyComponent } from '../confirm-delete-property/confirm-delete-property.component';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
@@ -233,6 +234,37 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
     });
     console.log("Edited properties : ", payload);
 
+  }
+
+  removeProperty(property: any) {
+    if (this.selectedEntity && this.selectedEntity.properties) {
+    
+    const dialogRef = this.dialog.open(ConfirmDeletePropertyComponent, {
+      data: {
+        propertyLabel: property.key,
+        entityIri: this.selectedEntity.iri,
+        value : property.value
+      } as ConfirmDeletePropertyData,
+      panelClass: 'rounded-xl',
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        const prop = this.entityPropertiesDict.find(
+          (p: any) => p.predicate === property.predicate
+        );
+        if (prop) {
+          prop.value = "";
+        }
+        console.log("query payload after removing property : ", this.entityPropertiesDict);
+        this.editEntity(); 
+        this.entityPropertiesDict = this.entityPropertiesDict.filter((p : any) => p.predicate !== property.predicate && p.value !== property.value); 
+        this.cdr.markForCheck();
+
+      }
+    });
+
+    }
   }
 
 }

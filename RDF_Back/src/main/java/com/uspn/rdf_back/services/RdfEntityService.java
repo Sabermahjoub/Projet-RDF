@@ -273,7 +273,7 @@ public class RdfEntityService {
 
             // properties (on renvoie tout ce qu’on trouve)
             // Lire toutes les propriétés
-            try (var stmts = conn.getStatements(subject, null, null)) {
+            try (var stmts = conn.getStatements(subject, null, null, CTX_INTERNAL)) {
                 while (stmts.hasNext()) {
                     Statement st = stmts.next();
                     IRI pred = st.getPredicate();
