@@ -170,7 +170,7 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
  
   openEditForm(dataSource: DataSource): void {
     if (dataSource.editable === false) {
-      this.showNotification('Les sources externes ne peuvent pas être éditées. Éditez dans l\'outil source et réimportez.', 'warning');
+      this.showNotification('External sources cannot be edited. Edit in source tool and re-import.', 'warning');
       return;
     }
  
@@ -204,18 +204,18 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
       
       // Vérification contrainte INTERNAL
       if (formValue.sourceType === 'INTERNAL' && !this.canCreateInternalSource() && !this.isEditing) {
-        this.showNotification('Une source de données interne existe déjà.', 'error');
+        this.showNotification('An internal data source already exists.', 'error');
         return;
       }
       
       //vérification external
       if (formValue.sourceType === 'EXTERNAL') {
         if (!formValue.tool || formValue.tool.trim() === '') {
-          this.showNotification('L\'outil source est obligatoire pour les sources externes.', 'error');
+          this.showNotification('Source tool is required for external sources.', 'error');
           return;
         }
         if (!formValue.url || formValue.url.trim() === '') {
-          this.showNotification('Le chemin du fichier RDF est obligatoire pour les sources externes.', 'error');
+          this.showNotification('RDF file path is required for external sources.', 'error');
           return;
         }
       }
@@ -230,21 +230,21 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
       const errors: string[] = [];
       
       if (this.dataSourceForm.get('shortName')?.invalid) {
-        errors.push('Nom court');
+        errors.push('Short name');
       }
       if (this.dataSourceForm.get('name')?.invalid) {
-        errors.push('Nom d\'affichage');
+        errors.push('Display name');
       }
       if (this.dataSourceForm.get('tool')?.invalid) {
-        errors.push('Outil source');
+        errors.push('Source tool');
       }
       if (this.dataSourceForm.get('url')?.invalid) {
-        errors.push('Chemin fichier');
+        errors.push('File path');
       }
       
       const errorMessage = errors.length > 0 
-        ? `Champs manquants: ${errors.join(', ')}`
-        : 'Veuillez remplir tous les champs requis';
+        ? `Missing fields: ${errors.join(', ')}`
+        : 'Please fill in all required fields';
       
       this.showNotification(errorMessage, 'error');
     }
@@ -260,14 +260,14 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (created) => {
           this.showNotification(
-            `Source créée: ${created.graphIRI}`, 
+            `Source created: ${created.graphIRI}`, 
             'success'
           );
           this.cancelForm();
         },
         error: (error) => {
           this.showNotification(
-            `Erreur: ${error.message}`, 
+            `Error: ${error.message}`, 
             'error'
           );
           console.error('Error:', error);
@@ -280,12 +280,12 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (updated) => {
-          this.showNotification('Source mise à jour', 'success');
+          this.showNotification('Source updated', 'success');
           this.cancelForm();
         },
         error: (error) => {
           this.showNotification(
-            `Erreur: ${error.message}`, 
+            `Error: ${error.message}`, 
             'error'
           );
         }
@@ -293,21 +293,21 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
   }
  
   deleteDataSource(dataSource: DataSource): void {
-    const message = `Supprimer "${dataSource.name}" et son graphe nommé?`;
+    const message = `Delete "${dataSource.name}" and its named graph?`;
     
     if (confirm(message)) {
       this.dataSourceService.deleteDataSource(dataSource.shortName)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
-            this.showNotification('Source supprimée', 'success');
+            this.showNotification('Source deleted', 'success');
             if (this.selectedDataSource?.id === dataSource.id) {
               this.selectedDataSource = null;
             }
           },
           error: (error) => {
             this.showNotification(
-              `Erreur: ${error.message}`, 
+              `Error: ${error.message}`, 
               'error'
             );
           }
@@ -316,16 +316,16 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
   }
  
   reimportSource(dataSource: DataSource): void {
-    if (confirm(`Réimporter depuis ${dataSource.url}?`)) {
+    if (confirm(`Re-import from ${dataSource.url}?`)) {
       this.dataSourceService.syncExternalSource(dataSource.shortName)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
-            this.showNotification('Données réimportées', 'success');
+            this.showNotification('Data re-imported', 'success');
           },
           error: (error) => {
             this.showNotification(
-              `Erreur: ${error.message}`, 
+              `Error: ${error.message}`, 
               'error'
             );
           }
@@ -350,10 +350,10 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
     if (!text) return;
     
     navigator.clipboard.writeText(text).then(() => {
-      this.showNotification('Copié dans le presse-papiers', 'success');
+      this.showNotification('Copied to clipboard', 'success');
     }).catch(err => {
-      console.error('Erreur lors de la copie:', err);
-      this.showNotification('Erreur lors de la copie', 'error');
+      console.error('Copy error', err);
+      this.showNotification('Copy error', 'error');
     });
   }
  
@@ -374,7 +374,7 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
     const internalSources = this.dataSources.filter(s => 
       s.sourceType?.toUpperCase() === 'INTERNAL'
     );
-    console.log('🔍 Sources internes:', internalSources.length);
+    console.log('Sources internes:', internalSources.length);
     return internalSources.length === 0;
   }
 
@@ -445,14 +445,14 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
     link.click();
     window.URL.revokeObjectURL(url);
     
-    this.showNotification('Export JSON réussi', 'success');
+    this.showNotification('JSON export successful', 'success');
   }
 
   exportAsCSV(): void {
     const data = this.getFilteredSources();
     
     // En-têtes CSV
-    const headers = ['Nom Court', 'Nom', 'Type', 'Outil', 'Éditable', 'Graph IRI'];
+    const headers = ['Short Name', 'Name', 'Type', 'Tool', 'Editable', 'Graph IRI'];
     
     // Lignes CSV
     const rows = data.map(s => [
@@ -460,7 +460,7 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
       s.name,
       s.sourceType,
       s.tool || '-',
-      s.editable ? 'Oui' : 'Non',
+      s.editable ? 'Yes' : 'No',
       s.graphIRI
     ]);
     
@@ -479,7 +479,7 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
     link.click();
     window.URL.revokeObjectURL(url);
     
-    this.showNotification('Export CSV réussi', 'success');
+    this.showNotification('CSV export successful', 'success');
   }
 
   exportConfiguration(): void {
@@ -507,7 +507,7 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
     link.click();
     window.URL.revokeObjectURL(url);
     
-    this.showNotification('Export configuration réussi', 'success');
+    this.showNotification('Configuration export successful', 'success');
   }
 
   /**
@@ -524,7 +524,7 @@ onFileSelected(event: Event): void {
   
   // Vérifie que c'est bien un fichier JSON
   if (!file.name.endsWith('.json')) {
-    this.showNotification('Le fichier doit être au format JSON', 'error');
+    this.showNotification('File must be in JSON format', 'error');
     return;
   }
 
@@ -538,7 +538,7 @@ onFileSelected(event: Event): void {
       
       // Valide la structure
       if (!this.validateConfigStructure(config)) {
-        this.showNotification('Format de configuration invalide', 'error');
+        this.showNotification('Invalid configuration format', 'error');
         return;
       }
 
@@ -547,12 +547,12 @@ onFileSelected(event: Event): void {
       
     } catch (error) {
       console.error('Erreur parsing JSON:', error);
-      this.showNotification('Fichier JSON invalide', 'error');
+      this.showNotification('Invalid JSON file', 'error');
     }
   };
 
   reader.onerror = () => {
-    this.showNotification('Erreur lors de la lecture du fichier', 'error');
+    this.showNotification('Error reading file', 'error');
   };
 
   reader.readAsText(file);
@@ -596,11 +596,11 @@ private validateConfigStructure(config: any): boolean {
     const sources = Array.isArray(config) ? config : config.sources;
     const count = sources.length;
 
-    const message = `Voulez-vous importer ${count} source(s) ?\n\n` +
-      `⚠️ Attention:\n` +
-      `- Les sources avec le même shortName seront ignorées\n` +
-      `- Seule 1 source INTERNAL peut exister\n` +
-      `- Les sources EXTERNAL seront créées mais pas synchronisées automatiquement`;
+    const message = `Do you want to import ${count} source(s)?\n\n` +
+      `⚠️ Warning:\n` +
+      `- Sources with the same shortName will be skipped\n` +
+      `- Only 1 INTERNAL source can exist\n` +
+      `- EXTERNAL sources will be created but not automatically synchronized`;
 
     if (confirm(message)) {
       this.importConfiguration(sources);
@@ -625,7 +625,7 @@ private validateConfigStructure(config: any): boolean {
     // Vérifie la contrainte INTERNAL
     if (internalSources.length > 1) {
       this.showNotification(
-        `❌ Le fichier contient ${internalSources.length} sources INTERNAL. Seule 1 est autorisée.`,
+        `❌ File contains ${internalSources.length} INTERNAL sources. Only 1 is allowed.`,
         'error'
       );
       return;
@@ -633,14 +633,14 @@ private validateConfigStructure(config: any): boolean {
 
     if (internalSources.length === 1 && !this.canCreateInternalSource()) {
       this.showNotification(
-        '❌ Une source INTERNAL existe déjà. Supprimez-la avant d\'importer.',
+        '❌ An INTERNAL source already exists. Delete it before importing.',
         'error'
       );
       return;
     }
 
     // Affiche notification de démarrage
-    this.showNotification(`🔄 Import de ${totalSources} source(s) en cours...`, 'info');
+    this.showNotification(`🔄 Importing ${totalSources} source(s)...`, 'info');
 
     // Import de chaque source
     sources.forEach((source) => {
@@ -667,7 +667,7 @@ private validateConfigStructure(config: any): boolean {
             completedCount++;
             console.log(`✅ Source importée: ${created.name}`);
 
-            // ✅ CORRECTION: Vérifie si TOUTES les requêtes sont terminées
+            
             if (completedCount === totalSources) {
               this.showImportSummary(successCount, errorCount, errors);
             }
@@ -679,7 +679,7 @@ private validateConfigStructure(config: any): boolean {
             errors.push(errorMsg);
             console.error(`❌ Erreur import ${source.shortName}:`, error);
 
-            // ✅ CORRECTION: Vérifie si TOUTES les requêtes sont terminées
+            
             if (completedCount === totalSources) {
               this.showImportSummary(successCount, errorCount, errors);
             }
@@ -694,16 +694,16 @@ private validateConfigStructure(config: any): boolean {
   private showImportSummary(successCount: number, errorCount: number, errors: string[]): void {
     if (errorCount === 0) {
       this.showNotification(
-        `✅ Import réussi ! ${successCount} source(s) créée(s)`,
+        `✅ Import successful! ${successCount} source(s) created`,
         'success'
       );
     } else {
-      const message = `⚠️ Import partiel:\n` +
-        `✅ ${successCount} réussie(s)\n` +
-        `❌ ${errorCount} échouée(s)\n\n` +
+      const message = `⚠️ Partial Import:\n` +
+        `✅ ${successCount} succeeded\n` +
+        `❌ ${errorCount} failed\n\n` +
         `Erreurs:\n${errors.join('\n')}`;
       
-      console.error('Erreurs d\'import:', errors);
+      console.error('Import errors', errors);
       this.showNotification(message, 'warning');
     }
   }
