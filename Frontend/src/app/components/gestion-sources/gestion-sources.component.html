@@ -1,5 +1,3 @@
-<!-- src/app/components/gestion-sources/gestion-sources.component.html -->
-
 <div class="flex flex-col h-screen bg-gray-50">
   <!-- Header -->
   <header class="bg-gradient-to-r from-blue-900 to-blue-600 shadow-lg">
@@ -12,8 +10,8 @@
           </svg>
         </div>
         <div>
-          <h1 class="text-xl font-bold text-white tracking-tight">Gestion des Sources de Données RDF</h1>
-          <p class="text-xs text-blue-100">Graphes nommés et sous-graphes RDF</p>
+          <h1 class="text-xl font-bold text-white tracking-tight">RDF Data Sources Management</h1>
+          <p class="text-xs text-blue-100">Named graphs and RDF subgraphs</p>
         </div>
       </div>
 
@@ -40,12 +38,12 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7"></path>
             </svg>
-            <span><strong>{{ dataSources.length }}</strong> source(s) de données</span>
+            <span><strong>{{ dataSources.length }}</strong> data source(s)</span>
           </div>
 
           <!-- Active Filter Badge -->
           <div *ngIf="showForm" class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium animate-fade-in">
-            <span>Mode création/édition actif</span>
+            <span>Create/edit mode active</span>
           </div>
         </div>
 
@@ -58,7 +56,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
-            <span>Nouvelle Source de Données</span>
+            <span>New Data Source</span>
           </button>
 
           <div *ngIf="!canCreateInternalSource()" class="px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
@@ -66,166 +64,168 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
               </svg>
-              <span>Une source de données interne existe déjà. Vous ne pouvez créer que des sources externes.</span>
+              <span>An internal data source already exists. You can only create external sources.</span>
             </div>
           </div>
 
           <div class="flex-1"></div>
-            <div class="flex items-center gap-2">
-              <div class="relative">
-                <input 
-                  #fileInput 
-                  type="file" 
-                  accept=".json"
-                  (change)="onFileSelected($event)"
-                  class="hidden">
-                
-                <button 
-                  (click)="fileInput.click()"
-                  class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                  aria-label="Importer une configuration">
-                  <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                  </svg>
-                </button>
-              </div>
 
-              <!-- BOUTON FILTRE -->
-              <div class="relative">
-                <button 
-                  (click)="toggleFilterMenu()"
-                  [class.bg-blue-50]="showFilterMenu"
-                  [class.border-blue-300]="showFilterMenu"
-                  class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" 
-                  aria-label="Filtres avancés">
-                  <svg class="w-5 h-5" [class.text-blue-600]="showFilterMenu" [class.text-gray-600]="!showFilterMenu" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                  </svg>
-                </button>
-                
-                <!-- Menu Filtres -->
-                <div *ngIf="showFilterMenu" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999] p-4">
-                  <div class="space-y-4">
-                    <!-- Filtre Type -->
-                    <div>
-                      <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Type de source</h4>
-                      <div class="flex gap-2">
-                        <button 
-                          (click)="applyTypeFilter('ALL')"
-                          [class.bg-blue-600]="filterType === 'ALL'"
-                          [class.text-white]="filterType === 'ALL'"
-                          [class.bg-gray-100]="filterType !== 'ALL'"
-                          class="px-3 py-1.5 rounded text-xs font-medium transition-colors">
-                          Toutes
-                        </button>
-                        <button 
-                          (click)="applyTypeFilter('INTERNAL')"
-                          [class.bg-blue-600]="filterType === 'INTERNAL'"
-                          [class.text-white]="filterType === 'INTERNAL'"
-                          [class.bg-gray-100]="filterType !== 'INTERNAL'"
-                          class="px-3 py-1.5 rounded text-xs font-medium transition-colors">
-                          Internes
-                        </button>
-                        <button 
-                          (click)="applyTypeFilter('EXTERNAL')"
-                          [class.bg-blue-600]="filterType === 'EXTERNAL'"
-                          [class.text-white]="filterType === 'EXTERNAL'"
-                          [class.bg-gray-100]="filterType !== 'EXTERNAL'"
-                          class="px-3 py-1.5 rounded text-xs font-medium transition-colors">
-                          Externes
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <!-- Filtre Outil -->
-                    <div *ngIf="getAvailableTools().length > 0">
-                      <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Outil source</h4>
-                      <div class="flex flex-wrap gap-2">
-                        <button 
-                          (click)="applyToolFilter('ALL')"
-                          [class.bg-blue-600]="filterTool === 'ALL'"
-                          [class.text-white]="filterTool === 'ALL'"
-                          [class.bg-gray-100]="filterTool !== 'ALL'"
-                          class="px-3 py-1.5 rounded text-xs font-medium transition-colors">
-                          Tous
-                        </button>
-                        <button 
-                          *ngFor="let tool of getAvailableTools()"
-                          (click)="applyToolFilter(tool)"
-                          [class.bg-blue-600]="filterTool === tool"
-                          [class.text-white]="filterTool === tool"
-                          [class.bg-gray-100]="filterTool !== tool"
-                          class="px-3 py-1.5 rounded text-xs font-medium transition-colors">
-                          {{ tool }}
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <!-- Recherche -->
-                    <div>
-                      <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Recherche</h4>
-                      <input 
-                        type="text"
-                        [(ngModel)]="searchTerm"
-                        placeholder="Rechercher..."
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    
-                    <!-- Actions -->
-                    <div class="pt-3 border-t border-gray-200 flex justify-end">
+          <div class="flex items-center gap-2">
+            <!-- IMPORT BUTTON -->
+            <div class="relative">
+              <input 
+                #fileInput 
+                type="file" 
+                accept=".json"
+                (change)="onFileSelected($event)"
+                class="hidden">
+              
+              <button 
+                (click)="fileInput.click()"
+                class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                aria-label="Import configuration">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+              </button>
+            </div>
+
+            <!-- FILTER BUTTON -->
+            <div class="relative">
+              <button 
+                (click)="toggleFilterMenu()"
+                [class.bg-blue-50]="showFilterMenu"
+                [class.border-blue-300]="showFilterMenu"
+                class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" 
+                aria-label="Advanced filters">
+                <svg class="w-5 h-5" [class.text-blue-600]="showFilterMenu" [class.text-gray-600]="!showFilterMenu" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                </svg>
+              </button>
+              
+              <!-- Filter Menu -->
+              <div *ngIf="showFilterMenu" class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999] p-4">
+                <div class="space-y-4">
+                  <!-- Type Filter -->
+                  <div>
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Source type</h4>
+                    <div class="flex gap-2">
                       <button 
-                        (click)="resetFilters()"
-                        class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">
-                        Réinitialiser
+                        (click)="applyTypeFilter('ALL')"
+                        [class.bg-blue-600]="filterType === 'ALL'"
+                        [class.text-white]="filterType === 'ALL'"
+                        [class.bg-gray-100]="filterType !== 'ALL'"
+                        class="px-3 py-1.5 rounded text-xs font-medium transition-colors">
+                        All
+                      </button>
+                      <button 
+                        (click)="applyTypeFilter('INTERNAL')"
+                        [class.bg-blue-600]="filterType === 'INTERNAL'"
+                        [class.text-white]="filterType === 'INTERNAL'"
+                        [class.bg-gray-100]="filterType !== 'INTERNAL'"
+                        class="px-3 py-1.5 rounded text-xs font-medium transition-colors">
+                        Internal
+                      </button>
+                      <button 
+                        (click)="applyTypeFilter('EXTERNAL')"
+                        [class.bg-blue-600]="filterType === 'EXTERNAL'"
+                        [class.text-white]="filterType === 'EXTERNAL'"
+                        [class.bg-gray-100]="filterType !== 'EXTERNAL'"
+                        class="px-3 py-1.5 rounded text-xs font-medium transition-colors">
+                        External
                       </button>
                     </div>
                   </div>
-                </div>
-              </div>
-
-              <!-- BOUTON EXPORT -->
-              <div class="relative">
-                <button 
-                  (click)="showExportMenu = !showExportMenu"
-                  [class.bg-blue-50]="showExportMenu"
-                  [class.border-blue-300]="showExportMenu"
-                  class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" 
-                  aria-label="Exporter les données">
-                  <svg class="w-5 h-5" [class.text-blue-600]="showExportMenu" [class.text-gray-600]="!showExportMenu" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                  </svg>
-                </button>
-                
-                <!-- Menu Export -->
-                <div *ngIf="showExportMenu" class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999] py-1">
-                  <button 
-                    (click)="exportAsJSON(); showExportMenu = false"
-                    class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-3">
-                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-                    </svg>
-                    <span>Exporter en JSON</span>
-                  </button>
-                  <button 
-                    (click)="exportAsCSV(); showExportMenu = false"
-                    class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-3">
-                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                    </svg>
-                    <span>Exporter en CSV</span>
-                  </button>
-                  <button 
-                    (click)="exportConfiguration(); showExportMenu = false"
-                    class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-3">
-                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    </svg>
-                    <span>Exporter la configuration</span>
-                  </button>
+                  
+                  <!-- Tool Filter -->
+                  <div *ngIf="getAvailableTools().length > 0">
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Source tool</h4>
+                    <div class="flex flex-wrap gap-2">
+                      <button 
+                        (click)="applyToolFilter('ALL')"
+                        [class.bg-blue-600]="filterTool === 'ALL'"
+                        [class.text-white]="filterTool === 'ALL'"
+                        [class.bg-gray-100]="filterTool !== 'ALL'"
+                        class="px-3 py-1.5 rounded text-xs font-medium transition-colors">
+                        All
+                      </button>
+                      <button 
+                        *ngFor="let tool of getAvailableTools()"
+                        (click)="applyToolFilter(tool)"
+                        [class.bg-blue-600]="filterTool === tool"
+                        [class.text-white]="filterTool === tool"
+                        [class.bg-gray-100]="filterTool !== tool"
+                        class="px-3 py-1.5 rounded text-xs font-medium transition-colors">
+                        {{ tool }}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- Search -->
+                  <div>
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Search</h4>
+                    <input 
+                      type="text"
+                      [(ngModel)]="searchTerm"
+                      placeholder="Search..."
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  </div>
+                  
+                  <!-- Actions -->
+                  <div class="pt-3 border-t border-gray-200 flex justify-end">
+                    <button 
+                      (click)="resetFilters()"
+                      class="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                      Reset
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <!-- EXPORT BUTTON -->
+            <div class="relative">
+              <button 
+                (click)="showExportMenu = !showExportMenu"
+                [class.bg-blue-50]="showExportMenu"
+                [class.border-blue-300]="showExportMenu"
+                class="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" 
+                aria-label="Export data">
+                <svg class="w-5 h-5" [class.text-blue-600]="showExportMenu" [class.text-gray-600]="!showExportMenu" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+              </button>
+              
+              <!-- Export Menu -->
+              <div *ngIf="showExportMenu" class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-[9999] py-1">
+                <button 
+                  (click)="exportAsJSON(); showExportMenu = false"
+                  class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-3">
+                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                  </svg>
+                  <span>Export as JSON</span>
+                </button>
+                <button 
+                  (click)="exportAsCSV(); showExportMenu = false"
+                  class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-3">
+                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                  </svg>
+                  <span>Export as CSV</span>
+                </button>
+                <button 
+                  (click)="exportConfiguration(); showExportMenu = false"
+                  class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-3">
+                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                  <span>Export configuration</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Create/Edit Form -->
@@ -237,10 +237,10 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
                 <h2 class="text-lg font-semibold text-white">
-                  {{ isEditing ? 'Modifier la Source de Données' : 'Créer une Nouvelle Source de Données' }}
+                  {{ isEditing ? 'Edit Data Source' : 'Create New Data Source' }}
                 </h2>
               </div>
-              <button (click)="cancelForm()" class="p-1.5 hover:bg-white/20 rounded-lg transition-colors" aria-label="Fermer">
+              <button (click)="cancelForm()" class="p-1.5 hover:bg-white/20 rounded-lg transition-colors" aria-label="Close">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
@@ -253,20 +253,20 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Source Type -->
                 <div class="md:col-span-2">
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Type de Source *</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Source Type *</label>
                   <select formControlName="sourceType" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
                     <option value="INTERNAL" [disabled]="!canCreateInternalSource() && !isEditing">
-                      Interne (Éditable dans l'application)
+                      Internal (Editable in application)
                     </option>
-                    <option value="EXTERNAL">Externe (Lecture seule, importée)</option>
+                    <option value="EXTERNAL">External (Read-only, imported)</option>
                   </select>
-                  <p class="mt-1 text-xs text-gray-500">Les sources internes sont éditables. Les sources externes sont en lecture seule.</p>
+                  <p class="mt-1 text-xs text-gray-500">Internal sources are editable. External sources are read-only.</p>
                 </div>
 
                 <!-- Short Name -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Nom Court (ID du Graphe) *
+                    Short Name (Graph ID) *
                   </label>
                   <input 
                     type="text" 
@@ -275,23 +275,23 @@
                     [readonly]="isEditing"
                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
                     [class.border-red-300]="dataSourceForm.get('shortName')?.invalid && dataSourceForm.get('shortName')?.touched">
-                  <p class="mt-1 text-xs text-gray-500 font-mono">Graphe: urn:datasource:{{dataSourceForm.get('shortName')?.value || 'your-name'}}</p>
+                  <p class="mt-1 text-xs text-gray-500 font-mono">Graph: urn:datasource:{{dataSourceForm.get('shortName')?.value || 'your-name'}}</p>
                   <div *ngIf="dataSourceForm.get('shortName')?.invalid && dataSourceForm.get('shortName')?.touched" class="mt-1 text-xs text-red-600">
-                    Seuls les lettres, chiffres, tirets et underscores sont autorisés
+                    Only letters, numbers, hyphens and underscores are allowed
                   </div>
                 </div>
 
                 <!-- Name -->
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Nom d'Affichage *</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Display Name *</label>
                   <input 
                     type="text" 
                     formControlName="name" 
-                    placeholder="e.g., Enregistrements Audio Lameta"
+                    placeholder="e.g., Lameta Audio Recordings"
                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"
                     [class.border-red-300]="dataSourceForm.get('name')?.invalid && dataSourceForm.get('name')?.touched">
                   <div *ngIf="dataSourceForm.get('name')?.invalid && dataSourceForm.get('name')?.touched" class="mt-1 text-xs text-red-600">
-                    Le nom est requis
+                    Name is required
                   </div>
                 </div>
 
@@ -301,7 +301,7 @@
                   <textarea 
                     formControlName="description" 
                     rows="3"
-                    placeholder="Décrivez le contenu de cette source de données..."
+                    placeholder="Describe the content of this data source..."
                     class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all"></textarea>
                 </div>
 
@@ -313,31 +313,31 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                       </svg>
                       <p class="text-sm text-blue-700">
-                        <strong>Note:</strong> Les sources externes sont en lecture seule. 
-                        Pour modifier ces données, éditez-les dans l'outil source puis réimportez.
+                        <strong>Note:</strong> External sources are read-only. 
+                        To modify this data, edit it in the source tool and then re-import.
                       </p>
                     </div>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Outil/Système Source</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Source Tool/System</label>
                     <select formControlName="tool" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
-                      <option value="">Aucun</option>
-                      <option value="Tropy">Tropy (Gestion de photos)</option>
-                      <option value="Lameta">Lameta (Enregistrements audio/vidéo)</option>
-                      <option value="Gramps">Gramps (Données généalogiques)</option>
-                      <option value="Other">Autre source RDF</option>
+                      <option value="">None</option>
+                      <option value="Tropy">Tropy (Photo management)</option>
+                      <option value="Lameta">Lameta (Audio/video recordings)</option>
+                      <option value="Gramps">Gramps (Genealogy data)</option>
+                      <option value="Other">Other RDF source</option>
                     </select>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">URL ou Chemin du Fichier RDF</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">RDF File URL or Path</label>
                     <input 
                       type="text" 
                       formControlName="url" 
-                      placeholder="file:///path/to/data.ttl ou https://example.com/data.rdf"
+                      placeholder="file:///path/to/data.ttl or https://example.com/data.rdf"
                       class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all">
-                    <p class="mt-1 text-xs text-gray-500">Chemin vers le fichier RDF à importer</p>
+                    <p class="mt-1 text-xs text-gray-500">Path to the RDF file to import</p>
                   </div>
                 </ng-container>
               </div>
@@ -348,13 +348,13 @@
                   type="button" 
                   (click)="cancelForm()"
                   class="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium">
-                  Annuler
+                  Cancel
                 </button>
                 <button 
                   type="submit" 
                   [disabled]="!dataSourceForm.valid"
                   class="px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-sm">
-                  {{ isEditing ? 'Mettre à Jour' : 'Créer la Source' }}
+                  {{ isEditing ? 'Update' : 'Create Source' }}
                 </button>
               </div>
             </form>
@@ -369,7 +369,7 @@
                 <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
                 </svg>
-                Sources de Données & Graphes Nommés
+                Data Sources & Named Graphs
               </h2>
               <span class="text-sm text-gray-500">{{ dataSources.length }} source(s)</span>
             </div>
@@ -380,7 +380,7 @@
               <thead class="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Nom & Graphe
+                    Name & Graph
                   </th>
                   <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Type
@@ -389,10 +389,10 @@
                     Source
                   </th>
                   <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Dernière Synchro
+                    Last Sync
                   </th>
                   <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Éditable
+                    Editable
                   </th>
                   <th class="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Actions
@@ -451,7 +451,7 @@
                       <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                         <circle cx="10" cy="10" r="4"></circle>
                       </svg>
-                      {{ source.editable !== false ? 'Oui' : 'Non' }}
+                      {{ source.editable !== false ? 'Yes' : 'No' }}
                     </span>
                   </td>
                   <td class="px-6 py-4 text-right">
@@ -461,7 +461,7 @@
                         [disabled]="source.editable === false"
                         [class.opacity-50]="source.editable === false"
                         class="text-blue-600 hover:text-blue-800 transition-colors disabled:cursor-not-allowed" 
-                        [attr.aria-label]="source.editable === false ? 'Impossible d\'éditer une source externe' : 'Modifier'">
+                        [attr.aria-label]="source.editable === false ? 'Cannot edit external source' : 'Edit'">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
@@ -470,7 +470,7 @@
                         *ngIf="source.sourceType === 'EXTERNAL'"
                         (click)="reimportSource(source); $event.stopPropagation()" 
                         class="text-purple-600 hover:text-purple-800 transition-colors" 
-                        aria-label="Réimporter">
+                        aria-label="Re-import">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                         </svg>
@@ -478,7 +478,7 @@
                       <button 
                         (click)="deleteDataSource(source); $event.stopPropagation()" 
                         class="text-red-600 hover:text-red-800 transition-colors" 
-                        aria-label="Supprimer">
+                        aria-label="Delete">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                         </svg>
@@ -496,15 +496,15 @@
           <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
           </svg>
-          <h3 class="mt-4 text-lg font-medium text-gray-900">Aucune Source de Données</h3>
-          <p class="mt-2 text-sm text-gray-500">Créez votre première source pour commencer à gérer vos métadonnées RDF</p>
+          <h3 class="mt-4 text-lg font-medium text-gray-900">No Data Sources</h3>
+          <p class="mt-2 text-sm text-gray-500">Create your first source to start managing your RDF metadata</p>
           <button 
             (click)="openCreateForm()"
             class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
-            Créer une Source de Données
+            Create Data Source
           </button>
         </div>
       </div>
@@ -519,7 +519,7 @@
           </svg>
           <h2 class="text-lg font-semibold text-gray-900">{{ selectedDataSource.name }}</h2>
         </div>
-        <button (click)="closeDetail()" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Fermer">
+        <button (click)="closeDetail()" class="p-1.5 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Close">
           <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
@@ -531,10 +531,10 @@
         <div class="space-y-6">
           <!-- ID -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">ID</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Short Name</label>
             <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
               <span class="text-sm text-gray-600 font-mono">{{ selectedDataSource.id }}</span>
-              <button (click)="copyToClipboard(selectedDataSource.id)" class="text-gray-400 hover:text-gray-600 transition-colors" aria-label="Copier">
+              <button (click)="copyToClipboard(selectedDataSource.id)" class="text-gray-400 hover:text-gray-600 transition-colors" aria-label="Copy">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                 </svg>
@@ -544,10 +544,10 @@
 
           <!-- Graph IRI -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Graphe Nommé (IRI)</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Named Graph (IRI)</label>
             <div class="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <span class="text-sm text-blue-700 font-mono">{{ selectedDataSource.graphIRI }}</span>
-              <button (click)="copyToClipboard(selectedDataSource.graphIRI)" class="text-blue-400 hover:text-blue-600 transition-colors" aria-label="Copier">
+              <button (click)="copyToClipboard(selectedDataSource.graphIRI)" class="text-blue-400 hover:text-blue-600 transition-colors" aria-label="Copy">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                 </svg>
@@ -576,24 +576,24 @@
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Éditable</label>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Editable</label>
               <span 
                 [class.bg-green-100]="selectedDataSource.editable !== false"
                 [class.text-green-700]="selectedDataSource.editable !== false"
                 [class.bg-red-100]="selectedDataSource.editable === false"
                 [class.text-red-700]="selectedDataSource.editable === false"
                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium">
-                {{ selectedDataSource.editable !== false ? 'Oui' : 'Non' }}
+                {{ selectedDataSource.editable !== false ? 'Yes' : 'No' }}
               </span>
             </div>
           </div>
 
           <!-- External Source Info -->
           <div *ngIf="selectedDataSource.sourceType === 'EXTERNAL'" class="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-            <h3 class="text-sm font-medium text-purple-900 mb-3">Source Externe</h3>
+            <h3 class="text-sm font-medium text-purple-900 mb-3">External Source</h3>
             <div class="space-y-2">
               <div *ngIf="selectedDataSource.tool">
-                <span class="text-xs font-semibold text-purple-700 uppercase tracking-wider">Outil</span>
+                <span class="text-xs font-semibold text-purple-700 uppercase tracking-wider">Tool</span>
                 <p class="text-sm text-purple-900">{{ selectedDataSource.tool }}</p>
               </div>
               <div *ngIf="selectedDataSource.url">
@@ -601,7 +601,7 @@
                 <p class="text-sm text-purple-900 font-mono break-all">{{ selectedDataSource.url }}</p>
               </div>
               <div *ngIf="selectedDataSource.lastSyncDate">
-                <span class="text-xs font-semibold text-purple-700 uppercase tracking-wider">Dernière Synchro</span>
+                <span class="text-xs font-semibold text-purple-700 uppercase tracking-wider">Last Sync</span>
                 <p class="text-sm text-purple-900">{{ selectedDataSource.lastSyncDate | date:'medium' }}</p>
               </div>
             </div>
@@ -612,7 +612,7 @@
             <button 
               (click)="toggleHistory(selectedDataSource.id!)"
               class="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors">
-              <span>Historique des Imports ({{ selectedDataSource.previousImportDates.length }})</span>
+              <span>Import History ({{ selectedDataSource.previousImportDates.length }})</span>
               <svg 
                 class="w-4 h-4 transition-transform" 
                 [class.rotate-180]="expandedHistory === selectedDataSource.id"
