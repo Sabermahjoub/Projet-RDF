@@ -71,11 +71,11 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
       for (let prop of entityProperties) {
         if (prop.predicate.includes('#')) {
           let propertyName = prop.predicate.substring(prop.predicate.lastIndexOf('#') + 1, prop.predicate.length);
-          entityPropertiesDict.push({ key: propertyName, value: prop.value, kind: prop.kind });
+          entityPropertiesDict.push({ key: propertyName, value: prop.value, kind: prop.kind, predicate : prop.predicate  });
         }
         else {
           let propertyName = prop.predicate.substring(prop.predicate.lastIndexOf('/') + 1, prop.predicate.length);
-          entityPropertiesDict.push({ key: propertyName, value: prop.value, kind : prop.kind });
+          entityPropertiesDict.push({ key: propertyName, value: prop.value, kind : prop.kind, predicate : prop.predicate  });
         }
       }
 
@@ -148,18 +148,6 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
     this.selectedEntity = null;
   }
 
-  // deleteEntity() {
-  //   if (this.selectedEntity && confirm(`Êtes-vous sûr de vouloir supprimer "${this.selectedEntity.titre}" ?`)) {
-  //     console.log('Deleting entity:', this.selectedEntity.id);
-  //     // TODO: Implement delete logic (API call)
-      
-  //     this.myNewEntites = this.myNewEntites.filter(e => e.id !== this.selectedEntity!.id);
-  //     // this.applyAllFilters();
-  //     // this.updateEntityTypeCounts();
-  //     this.closeDetail();
-  //   }
-  // }
-
   deleteEntity() {
     if (!this.selectedEntity) return;
 
@@ -205,6 +193,46 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
         });
       }
     });
+  }
+
+  editEntity() : void {
+    const payload = {
+      properties: this.entityPropertiesDict.map(({ value, predicate, kind }) => ({
+        value,
+        predicate,
+        kind
+      }))
+    };
+    this.gestionRessourceService.editEntity(this.selectedEntity.entityKey, payload).subscribe({
+      next: () => {
+        this.snackBar.open(
+          `"${this.selectedEntity.iri}" was successfully updated.`,
+          'Close',
+          {
+            duration: 5000,
+            horizontalPosition: 'center',
+            verticalPosition: 'top',
+            panelClass: ['snackbar-success']
+          }
+        );
+        console.log('Entity updated:', this.selectedEntity.entityKey);
+      },
+      error: (err) => {
+        console.error('Edit failed:', err);
+        this.snackBar.open(
+          `Failed to update "${this.selectedEntity.iri}".`,
+          'Close',
+          {
+            duration: 5000,
+            horizontalPosition: 'center',
+            verticalPosition: 'top',
+            panelClass: ['snackbar-error']
+          }
+        );
+      }
+    });
+    console.log("Edited properties : ", payload);
+
   }
 
 }
