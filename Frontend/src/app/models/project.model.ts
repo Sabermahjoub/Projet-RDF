@@ -5,7 +5,7 @@
  */
 export interface ProjectDto {
   /** true si un projet est actuellement ouvert */
-  open: boolean;
+  isOpen: boolean;
   /** Nom unique du projet (null si open=false) */
   name: string | null;
   /** Description optionnelle */
@@ -13,7 +13,7 @@ export interface ProjectDto {
   /** Date de création (format ISO) */
   created: string | null;
   /** Date de dernière modification (format ISO) */
-  modified: string | null;
+  lastModified: string | null;
 }
 
 /**

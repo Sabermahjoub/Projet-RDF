@@ -200,8 +200,8 @@
 
                   <!-- Modifié -->
                   <td class="px-6 py-4 text-sm text-gray-600">
-                    @if (project.modified) {
-                      {{ project.modified | date:'dd/MM/yyyy HH:mm' }}
+                    @if (project.lastModified) {
+                      {{ project.lastModified | date:'dd/MM/yyyy HH:mm' }}
                     } @else {
                       <span class="text-gray-400">-</span>
                     }
@@ -209,7 +209,7 @@
 
                   <!-- Statut -->
                   <td class="px-6 py-4">
-                    @if (activeProject?.name === project.name) {
+                    @if (project.isOpen) {
                       <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
                         <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                         Actif
@@ -504,8 +504,8 @@
         <div>
           <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Modifié le</label>
           <p class="text-sm text-gray-700">
-            @if (selectedProject.modified) {
-              {{ selectedProject.modified | date:'dd/MM/yyyy HH:mm' }}
+            @if (selectedProject.lastModified) {
+              {{ selectedProject.lastModified | date:'dd/MM/yyyy HH:mm' }}
             } @else {
               <span class="text-gray-400">-</span>
             }
@@ -534,6 +534,18 @@
         </button>
 
         @if (activeProject?.name === selectedProject.name) {
+          @if (activeProject?.name === selectedProject.name) {
+          <button
+            (click)="goToSources()"
+            class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+            </svg>
+            Gérer les sources de données
+          </button>
+}
+
           <button (click)="onCloseProject()"
             class="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
