@@ -24,7 +24,7 @@ export class GestionProjetService {
    * Retourne la liste de tous les projets connus du backend.
    */
   getAllProjects(): Observable<ProjectDto[]> {
-    return this.http.get<ProjectDto[]>(`${this.API_BASE}/all`).pipe(
+    return this.http.get<ProjectDto[]>(`${this.API_BASE}/list/details`).pipe(
       catchError(err => this.handleError(err, 'Erreur lors du chargement des projets'))
     );
   }
