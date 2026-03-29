@@ -10,7 +10,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 })
 export class GestionProjetService {
 
-  private readonly API_BASE = 'http://localhost:8080/api/project';
+  private readonly API_BASE = 'http://localhost:8080/projects';
 
   // ── State global : projet actif ──────────────────────────────────────────
   private _activeProject$ = new BehaviorSubject<ProjectDto | null>(null);
