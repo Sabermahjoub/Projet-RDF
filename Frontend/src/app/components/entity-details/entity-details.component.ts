@@ -11,6 +11,7 @@ import { Stack } from '../../shared/utils/stack';
 import { ConfirmDeleteDialogComponent, ConfirmDeleteDialogData } from '../confirm-delete-dialog/confirm-delete-dialog.component';
 import { ConfirmDeletePropertyData, ConfirmDeletePropertyComponent } from '../confirm-delete-property/confirm-delete-property.component';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import {ONTOLOGY_LABELS} from '../../models/ontology-labels';
 
 @Component({
   selector: 'app-entity-details',
@@ -28,6 +29,14 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
   entityPropertiesDict : any[] = [];
   detailTab: 'ric' | 'foaf' | 'metadata' = 'ric';
   myNewEntites : Entity[] = [];
+  newAssociation: {
+  mode: 'existing' | 'new' | null;  // which sub-mode
+  predicate: string;                 // for 'existing': full predicate URI
+  ontologyUrl: string;               // for 'new': selected ontology base URL
+  customPredicate: string;           // for 'new': user-typed predicate name
+  kind: 'literal' | 'iri';
+  value: string;
+  } | null = null;
 
   private gestionRessourceService = inject(GestionRessourcesService);
   private cdr = inject(ChangeDetectorRef); 
@@ -117,12 +126,6 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
     if (this.selectedEntity && this.selectedEntity.associatedWith) {
       this.selectedEntity.associatedWith = this.selectedEntity.associatedWith.filter((p : any) => p !== person);
     }
-  }
-
-  // Add association
-  addAssociation() {
-    console.log('Add association clicked');
-    // TODO: Implement modal to select person to associate
   }
 
 
@@ -266,5 +269,58 @@ export class EntityDetailsComponent implements OnInit, OnChanges {
 
     }
   }
+
+
+// Computed list of ontology entries for the dropdown
+get ontologyEntries(): { label: string; url: string }[] {
+  return Object.entries(ONTOLOGY_LABELS).map(([url, label]) => ({ url, label: label as string }));
+}
+
+// Replace your existing addAssociation()
+addAssociation() {
+  this.newAssociation = {
+    mode: null,
+    predicate: '',
+    ontologyUrl: '',
+    customPredicate: '',
+    kind: 'literal',
+    value: ''
+  };
+}
+
+// Replace your existing confirmAddAssociation()
+confirmAddAssociation() {
+  if (!this.newAssociation || !this.newAssociation.value) return;
+
+  let fullPredicate: string;
+  let propertyName: string;
+
+  if (this.newAssociation.mode === 'existing') {
+    if (!this.newAssociation.predicate) return;
+    fullPredicate = this.newAssociation.predicate;
+    fullPredicate.includes('#')
+      ? propertyName = fullPredicate.substring(fullPredicate.lastIndexOf('#') + 1)
+      : propertyName = fullPredicate.substring(fullPredicate.lastIndexOf('/') + 1);
+  } else {
+    if (!this.newAssociation.ontologyUrl || !this.newAssociation.customPredicate) return;
+    const base = this.newAssociation.ontologyUrl; // already ends with # or /
+    fullPredicate = base + this.newAssociation.customPredicate;
+    propertyName = this.newAssociation.customPredicate;
+  }
+
+  this.entityPropertiesDict.push({
+    key: propertyName,
+    value: this.newAssociation.value,
+    kind: this.newAssociation.kind,
+    predicate: fullPredicate
+  });
+
+  this.newAssociation = null;
+}
+
+// Keep your existing cancelAddAssociation()
+cancelAddAssociation() {
+  this.newAssociation = null;
+}
 
 }
