@@ -40,7 +40,7 @@ export class GestionProjetsComponent implements OnInit, OnDestroy {
 
   // ── Recherche / Tri ────────────────────────────────────────────────────────
   searchTerm = '';
-  sortField: 'name' | 'created' | 'modified' = 'modified';
+  sortField: 'name' | 'created' | 'lastModified' = 'lastModified';
   sortAsc   = false;
 
   // ── Pagination ─────────────────────────────────────────────────────────────
@@ -147,6 +147,9 @@ export class GestionProjetsComponent implements OnInit, OnDestroy {
         error: () => {}
       });
   }
+      goToSources(): void {
+      this.router.navigate(['/gestion-sources']);
+    }
 
   // ── Panneau détail ─────────────────────────────────────────────────────────
 
@@ -176,8 +179,8 @@ export class GestionProjetsComponent implements OnInit, OnDestroy {
     }
 
     result.sort((a, b) => {
-      const valA = (this.sortField === 'name' ? a.name : this.sortField === 'created' ? a.created : a.modified) ?? '';
-      const valB = (this.sortField === 'name' ? b.name : this.sortField === 'created' ? b.created : b.modified) ?? '';
+      const valA = (this.sortField === 'name' ? a.name : this.sortField === 'created' ? a.created : a.lastModified) ?? '';
+      const valB = (this.sortField === 'name' ? b.name : this.sortField === 'created' ? b.created : b.lastModified) ?? '';
       return this.sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
     });
 

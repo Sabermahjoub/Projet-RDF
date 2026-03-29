@@ -37,10 +37,10 @@ public class ProjectController {
         return Map.of("status", "ok");
     }
     // Liste simple
-    @GetMapping("/list")
-    public List<String> listProjects() {
-        return projectService.listProjects();
-    }
+//    @GetMapping("/list")
+//    public List<String> listProjects() {
+//        return projectService.listProjects();
+//    }
 
     // Liste détaillée
     @GetMapping("/list/details")
