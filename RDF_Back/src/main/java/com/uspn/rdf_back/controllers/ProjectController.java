@@ -4,7 +4,7 @@ import com.uspn.rdf_back.dtos.CreateProjectRequest;
 import com.uspn.rdf_back.dtos.ProjectDto;
 import com.uspn.rdf_back.services.ProjectService;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.*;
 import java.util.Map;
 
 @RestController
@@ -36,4 +36,16 @@ public class ProjectController {
         projectService.closeProject();
         return Map.of("status", "ok");
     }
+    // Liste simple
+    @GetMapping("/list")
+    public List<String> listProjects() {
+        return projectService.listProjects();
+    }
+
+    // Liste détaillée
+    @GetMapping("/list/details")
+    public List<Map<String, Object>> listProjectsDetailed() {
+        return projectService.listProjectsDetailed();
+    }
+
 }
