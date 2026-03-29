@@ -129,41 +129,170 @@
 
     </div>
 
+    <div class="mb-6 flex flex-col gap-2!">
 
-    <!-- Associated With -->
-    <div *ngIf="selectedEntity?.associatedWith && selectedEntity?.associatedWith!.length > 0" class="mb-6 flex flex-col gap-2!">
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-            Associated With ({{ selectedEntity?.associatedWith!.length }})
-            <button class="inline ml-1 text-gray-400 hover:text-gray-600" aria-label="Information">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            </button>
-        </label>
-        <div class="space-y-2 flex flex-col gap-2!">
-
-            <!-- référence -->
-            <div *ngFor="let person of selectedEntity?.associatedWith" class="cursor-pointer flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg group hover:bg-blue-100 transition-colors">
-            <div class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                </svg>
-                <span class="text-sm text-blue-700 font-medium">{{ person }}</span>
-            </div>
-            <button (click)="removeAssociation(person)" class="text-blue-400 hover:text-blue-600 transition-colors" aria-label="Supprimer l'association">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-            </div>
-        </div>
-        <button (click)="addAssociation()" class="mt-2 flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- Trigger button -->
+    <div class="flex items-center justify-center">
+        <button
+        *ngIf="!newAssociation"
+        (click)="addAssociation()"
+        class="cursor-pointer! mt-2 flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+        >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            Ajouter une association
+        </svg>
+        Ajouter une association
         </button>
     </div>
+
+    <!-- Inline form -->
+    <div *ngIf="newAssociation" class="mt-3 p-3 border border-blue-200 bg-blue-50 rounded-lg flex flex-col gap-3!">
+
+        <!-- Step 1 : mode selection -->
+        <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Predicate source</label>
+        <div class="flex gap-2">
+            <button
+            (click)="newAssociation.mode = 'existing'"
+            [class.bg-blue-600]="newAssociation.mode === 'existing'"
+            [class.text-white]="newAssociation.mode === 'existing'"
+            [class.bg-white]="newAssociation.mode !== 'existing'"
+            [class.text-gray-600]="newAssociation.mode !== 'existing'"
+            class="cursor-pointer! flex-1 text-sm py-1.5 rounded-md border border-gray-300 transition-colors font-medium"
+            >
+            Existing predicate
+            </button>
+            <button
+            (click)="newAssociation.mode = 'new'"
+            [class.bg-blue-600]="newAssociation.mode === 'new'"
+            [class.text-white]="newAssociation.mode === 'new'"
+            [class.bg-white]="newAssociation.mode !== 'new'"
+            [class.text-gray-600]="newAssociation.mode !== 'new'"
+            class="cursor-pointer! flex-1 text-sm py-1.5 rounded-md border border-gray-300 transition-colors font-medium"
+            >
+            New predicate
+            </button>
+        </div>
+        </div>
+
+        <!-- Mode: existing predicate -->
+        <div *ngIf="newAssociation.mode === 'existing'">
+        <label class="block text-xs font-medium text-gray-600 mb-1">Predicate</label>
+        <select
+            [(ngModel)]="newAssociation.predicate"
+            class="w-full text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+        >
+            <option value="" disabled>Select a predicate...</option>
+            <option *ngFor="let prop of entityPropertiesDict" [value]="prop.predicate">
+            {{ prop.key }} — <span class="text-gray-400 font-mono text-xs">{{ prop.predicate }}</span>
+            </option>
+        </select>
+        </div>
+
+        <!-- Mode: new predicate -->
+        <ng-container *ngIf="newAssociation.mode === 'new'">
+
+        <!-- Ontology dropdown -->
+        <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Ontology namespace</label>
+            <select
+            [(ngModel)]="newAssociation.ontologyUrl"
+            class="w-full text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+            <option value="" disabled>Select an ontology...</option>
+            <option *ngFor="let onto of ontologyEntries" [value]="onto.url">
+                {{ onto.label }} — <span class="font-mono text-xs text-gray-400">{{ onto.url }}</span>
+            </option>
+            </select>
+        </div>
+
+        <!-- Custom predicate name -->
+        <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Predicate name</label>
+            <div class="flex items-center gap-1 border border-gray-300 rounded-md bg-white px-2 py-1.5 focus-within:ring-2 focus-within:ring-blue-400">
+            <span *ngIf="newAssociation.ontologyUrl" class="text-xs text-gray-400 font-mono truncate max-w-[120px] shrink-0">
+                {{ newAssociation.ontologyUrl }}
+            </span>
+            <input
+                type="text"
+                [(ngModel)]="newAssociation.customPredicate"
+                placeholder="myPredicate"
+                class="text-sm text-gray-900 w-full bg-transparent focus:outline-none"
+            />
+            </div>
+            <!-- Full IRI preview -->
+            <p *ngIf="newAssociation.ontologyUrl && newAssociation.customPredicate"
+            class="mt-1 text-xs text-gray-400 font-mono truncate">
+            → {{ newAssociation.ontologyUrl }}{{ newAssociation.customPredicate }}
+            </p>
+        </div>
+
+        </ng-container>
+
+        <!-- Kind toggle (shown once a mode is selected) -->
+        <div *ngIf="newAssociation.mode">
+        <label class="block text-xs font-medium text-gray-600 mb-1">Type</label>
+        <div class="flex gap-2">
+            <button
+            (click)="newAssociation.kind = 'literal'"
+            [class.bg-blue-600]="newAssociation.kind === 'literal'"
+            [class.text-white]="newAssociation.kind === 'literal'"
+            [class.bg-white]="newAssociation.kind !== 'literal'"
+            [class.text-gray-600]="newAssociation.kind !== 'literal'"
+            class="cursor-pointer! flex-1 text-sm py-1 rounded-md border border-gray-300 transition-colors font-medium"
+            >
+            Literal
+            </button>
+            <button
+            (click)="newAssociation.kind = 'iri'"
+            [class.bg-blue-600]="newAssociation.kind === 'iri'"
+            [class.text-white]="newAssociation.kind === 'iri'"
+            [class.bg-white]="newAssociation.kind !== 'iri'"
+            [class.text-gray-600]="newAssociation.kind !== 'iri'"
+            class="cursor-pointer! flex-1 text-sm py-1 rounded-md border border-gray-300 transition-colors font-medium"
+            >
+            IRI
+            </button>
+        </div>
+        </div>
+
+        <!-- Value (shown once a mode is selected) -->
+        <div *ngIf="newAssociation.mode">
+        <label class="block text-xs font-medium text-gray-600 mb-1">Value</label>
+        <input
+            type="text"
+            [(ngModel)]="newAssociation.value"
+            [placeholder]="newAssociation.kind === 'iri' ? 'https://...' : 'Enter a value'"
+            class="w-full text-sm border border-gray-300 rounded-md px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+        </div>
+
+        <!-- Confirm / Cancel -->
+        <div class="flex gap-2 pt-1">
+        <button
+            (click)="confirmAddAssociation()"
+            [disabled]="
+            !newAssociation.mode || !newAssociation.value ||
+            (newAssociation.mode === 'existing' && !newAssociation.predicate) ||
+            (newAssociation.mode === 'new' && (!newAssociation.ontologyUrl || !newAssociation.customPredicate))
+            "
+            class="cursor-pointer! flex-1 text-sm py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium"
+        >
+            Confirm
+        </button>
+        <button
+            (click)="cancelAddAssociation()"
+            class="cursor-pointer! flex-1 text-sm py-1.5 border border-gray-300 text-gray-600 rounded-md hover:bg-gray-100 transition-colors font-medium"
+        >
+            Cancel
+        </button>
+        </div>
+
+    </div>
+    </div>
+
+
+
 
     <div class="mt-8 flex gap-3">
         <button (click)="editEntity()" class="cursor-pointer! flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm">
