@@ -19,6 +19,7 @@ import java.io.File;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 public class ProjectService {
@@ -146,5 +147,56 @@ public class ProjectService {
 
     public void closeProject() {
         ProjectContext.close();
+    }
+
+    /**
+     * Liste simple : retourne juste les noms des projets existants sur le disque
+     */
+    public List<String> listProjects() {
+        File projectsDir = new File("projects");
+
+        if (!projectsDir.exists() || !projectsDir.isDirectory()) {
+            return List.of();
+        }
+
+        String[] names = projectsDir.list((dir, name) ->
+                new File(dir, name + "/store").isDirectory()
+        );
+
+        if (names == null) return List.of();
+
+        List<String> result = new ArrayList<>(Arrays.asList(names));
+        Collections.sort(result);
+        return result;
+    }
+
+    /**
+     * Liste détaillée : retourne nom + date de modification + si ouvert actuellement
+     */
+    public List<Map<String, Object>> listProjectsDetailed() {
+        File projectsDir = new File("projects");
+
+        if (!projectsDir.exists() || !projectsDir.isDirectory()) {
+            return List.of();
+        }
+
+        File[] dirs = projectsDir.listFiles(f ->
+                f.isDirectory() && new File(f, "store").isDirectory()
+        );
+
+        if (dirs == null) return List.of();
+
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        for (File dir : dirs) {
+            Map<String, Object> info = new HashMap<>();
+            info.put("name",         dir.getName());
+            info.put("lastModified", new java.util.Date(dir.lastModified()).toString());
+            info.put("isOpen",       dir.getName().equals(ProjectContext.getProjectName()));
+            result.add(info);
+        }
+
+        result.sort(Comparator.comparing(m -> m.get("name").toString()));
+        return result;
     }
 }
