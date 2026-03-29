@@ -189,14 +189,60 @@ public class ProjectService {
         List<Map<String, Object>> result = new ArrayList<>();
 
         for (File dir : dirs) {
+            String name = dir.getName();
             Map<String, Object> info = new HashMap<>();
-            info.put("name",         dir.getName());
-            info.put("lastModified", new java.util.Date(dir.lastModified()).toString());
-            info.put("isOpen",       dir.getName().equals(ProjectContext.getProjectName()));
+            info.put("name",     name);
+            info.put("isOpen",   name.equals(ProjectContext.getProjectName()));
+
+            // ── Si c'est le projet actuellement ouvert, on lit depuis le repo actif
+            if (name.equals(ProjectContext.getProjectName())) {
+                info.put("isOpen", true);
+                readMetadataFromRepo(ProjectContext.getRepository(), name, info);
+            } else {
+                // ── Sinon on ouvre le NativeStore temporairement en lecture seule
+                File storeDir = new File(dir, "store");
+                NativeStore store = new NativeStore(storeDir);
+                Repository tempRepo = new SailRepository(store);
+                try {
+                    tempRepo.init();
+                    readMetadataFromRepo(tempRepo, name, info);
+                } catch (Exception e) {
+                    // Store illisible : on met des valeurs par défaut
+                    info.put("description", null);
+                    info.put("created",     null);
+                    info.put("lastModified",    new java.util.Date(dir.lastModified()));
+                } finally {
+                    tempRepo.shutDown();
+                }
+            }
+
             result.add(info);
         }
 
         result.sort(Comparator.comparing(m -> m.get("name").toString()));
         return result;
+    }
+
+    // ── Lecture des métadonnées RDF dans un repo (ouvert ou temporaire) ─────────
+    private void readMetadataFromRepo(Repository repo, String projectName, Map<String, Object> info) {
+        try (RepositoryConnection conn = repo.getConnection()) {
+            ValueFactory vf = conn.getValueFactory();
+            IRI project = projectIri(vf, projectName);   // même helper que upsertProjectMetadata
+            IRI ctx     = metadataCtx(vf);               // même helper que upsertProjectMetadata
+
+            info.put("description", getStringValue(conn, project, DCTERMS.DESCRIPTION, ctx));
+            info.put("created",     getStringValue(conn, project, DCTERMS.CREATED,     ctx));
+            info.put("lastModified",    getStringValue(conn, project, DCTERMS.MODIFIED,    ctx));
+        }
+    }
+
+    // ── Utilitaire : lit la valeur d'un triple comme String (null si absent) ────
+    private String getStringValue(RepositoryConnection conn, IRI subject, IRI predicate, IRI ctx) {
+        try (var result = conn.getStatements(subject, predicate, null, ctx)) {
+            if (result.hasNext()) {
+                return result.next().getObject().stringValue();
+            }
+        }
+        return null;
     }
 }
