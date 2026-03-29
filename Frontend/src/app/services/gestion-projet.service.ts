@@ -35,9 +35,10 @@ export class GestionProjetService {
    * Retourne le projet actuellement ouvert (open=false si aucun).
    */
   getActiveProject(): Observable<ProjectDto> {
-    return this.http.get<ProjectDto>(this.API_BASE).pipe(
+    return this.http.get<ProjectDto>(`${this.API_BASE}/current`).pipe(
       tap(project => {
-        this._activeProject$.next(project.open ? project : null);
+        this._activeProject$.next(project.name ? project : null);
+        // console.log(this._activeProject$.next(project.name ? project : null))
       }),
       catchError(err => this.handleError(err, 'Erreur lors de la récupération du projet'))
     );
@@ -52,7 +53,7 @@ export class GestionProjetService {
     return this.http.post<ProjectDto>(`${this.API_BASE}/open`, request).pipe(
       tap(project => {
         this._activeProject$.next(project);
-        this.snackBar.open(`Projet "${project.name}" ouvert`, 'Fermer', {
+        this.snackBar.open(`Projet  ouvert`, 'Fermer', {
           duration: 3000, panelClass: ['snackbar-success']
         });
       }),
@@ -65,8 +66,9 @@ export class GestionProjetService {
   /**
    * Ferme le projet actif. Les données restent sur disque.
    */
-  closeProject(): Observable<void> {
-    return this.http.delete<void>(`${this.API_BASE}/close`).pipe(
+
+    closeProject(): Observable<void> {
+    return this.http.post<void>(`${this.API_BASE}/close`, {}).pipe(
       tap(() => {
         this._activeProject$.next(null);
         this.snackBar.open('Projet fermé', 'Fermer', {
@@ -76,6 +78,7 @@ export class GestionProjetService {
       catchError(err => this.handleError(err, 'Erreur lors de la fermeture du projet'))
     );
   }
+
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
