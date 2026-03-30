@@ -1,30 +1,37 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ONTOLOGY_LABELS } from '../models/ontology-labels';
+import { OntologyLabelsService } from './ontology-labels.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GestionRessourcesService {
+
   private apiUrl = 'http://localhost:8080/sparql';
   private ontologyUrl = 'http://localhost:8080/ontology';
   private rdfUrl = 'http://localhost:8080/rdf';
-  constructor(private http: HttpClient) { }
 
-  getOntologyLabel(listeIris : string[] ) : any[] {
+  constructor(
+    private http: HttpClient,
+    private ontologyLabelsService: OntologyLabelsService
+  ) {}
+
+  /**
+   * Retourne les types regroupés par label d'ontologie
+   */
+  getOntologyLabel(listeIris: string[]): any[] {
     const ontology_types: any[] = [];
-    let ns = "";
+    const labels = this.ontologyLabelsService.getLabels();
+
     for (let typeIri of listeIris) {
-      if (typeIri.includes('#')) {
 
-        ns = typeIri.substring(0, typeIri.lastIndexOf('#') + 1);
-      }
-      else {
-        ns = typeIri.substring(0, typeIri.lastIndexOf('/') + 1);
-      }
+      const ns = typeIri.includes('#')
+        ? typeIri.substring(0, typeIri.lastIndexOf('#') + 1)
+        : typeIri.substring(0, typeIri.lastIndexOf('/') + 1);
 
-      const elt = ns in ONTOLOGY_LABELS ? ONTOLOGY_LABELS[ns as keyof typeof ONTOLOGY_LABELS] : ns;
+      const elt = ns in labels ? labels[ns] : ns;
+
       let obj = ontology_types.find(o => elt in o);
 
       if (!obj) {
@@ -32,70 +39,80 @@ export class GestionRessourcesService {
         ontology_types.push(obj);
       }
 
-      obj[elt].push(typeIri.substring(typeIri.lastIndexOf('#')+1, typeIri.length));
+      const localName = typeIri.includes('#')
+        ? typeIri.substring(typeIri.lastIndexOf('#') + 1)
+        : typeIri.substring(typeIri.lastIndexOf('/') + 1);
+
+      obj[elt].push(localName);
     }
 
     return ontology_types;
-        
   }
 
+  /**
+   * Version simplifiée : retourne uniquement les labels
+   */
+  getOntologyLabel_v2(listeIris: string[]): string[] {
+    const labelsMap = this.ontologyLabelsService.getLabels();
 
-  getOntologyLabel_v2(listeIris : string[]) : string[] {
-    const labels: string[] = [];
-    for (let typeIri of listeIris) {
-      const ns : string = typeIri.includes('#') 
+    return listeIris.map(typeIri => {
+      const ns = typeIri.includes('#')
         ? typeIri.substring(0, typeIri.lastIndexOf('#') + 1)
         : typeIri.substring(0, typeIri.lastIndexOf('/') + 1);
-        labels.push(ns in ONTOLOGY_LABELS ? ONTOLOGY_LABELS[ns as keyof typeof ONTOLOGY_LABELS] : ns);
-    }
-    return labels;
+
+      return ns in labelsMap ? labelsMap[ns] : ns;
+    });
   }
 
+  /**
+   * Récupère les types depuis le backend
+   */
   getTypes(): Observable<any> {
-    return this.http.get<any>(`${this.ontologyUrl}/types`);  
+    return this.http.get<any>(`${this.ontologyUrl}/types`);
   }
 
-  
-
+  /**
+   * Récupère l'URL d'une ontologie à partir de son label
+   */
   getTypeUrlByName(ontologyName: string): string {
-    const entry = Object.entries(ONTOLOGY_LABELS).find(([_, label]) => label === ontologyName);
+    const labels = this.ontologyLabelsService.getLabels();
+
+    const entry = Object.entries(labels)
+      .find(([_, label]) => label === ontologyName);
+
     return entry ? entry[0] : '';
   }
 
+  /**
+   * Récupère les entités par type
+   */
   getAllEntitiesByType(typeUrl: string): Observable<any> {
     const params = new HttpParams().set('type', typeUrl);
-    return this.http.get<any>(`${this.rdfUrl}/entities`, {params});
+    return this.http.get<any>(`${this.rdfUrl}/entities`, { params });
   }
 
+  /**
+   * Détails d'une entité
+   */
   getEntityDetails(entityKey: string): Observable<any> {
     const params = new HttpParams().set('key', entityKey);
-    return this.http.get<any>(`${this.rdfUrl}/entity`, {params});
+    return this.http.get<any>(`${this.rdfUrl}/entity`, { params });
   }
 
-  deleteEntity(entityKey: string) : Observable<any> {
+  /**
+   * Supprimer une entité
+   */
+  deleteEntity(entityKey: string): Observable<any> {
     const params = new HttpParams().set('key', entityKey);
-    return this.http.delete<any>(`${this.rdfUrl}/entity`, {params});
+    return this.http.delete<any>(`${this.rdfUrl}/entity`, { params });
   }
 
-  editEntity(entityKey : string, newEntity : any ) : Observable<any> {
+  /**
+   * Modifier une entité
+   */
+  editEntity(entityKey: string, newEntity: any): Observable<any> {
     const params = new HttpParams().set('key', entityKey);
-    return this.http.put<any>(`${this.rdfUrl}/entity`, newEntity, {params});
+    return this.http.put<any>(`${this.rdfUrl}/entity`, newEntity, { params });
   }
 
-
-  // getTypes(): Observable<any> {
-
-  //   const object = {
-  //     query: "SELECT DISTINCT ?type WHERE { ?s rdf:type ?type }"
-  //   };
-  //   return this.http.post<any>(
-  //   `${this.apiUrl}/select`,
-  //   object,
-  //   {
-  //     headers: {
-  //       'Content-Type': 'application/json'
-  //     }
-  //   }
-  //   );  
-  // }
 }
