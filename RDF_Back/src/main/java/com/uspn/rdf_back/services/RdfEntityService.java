@@ -411,9 +411,13 @@ public class RdfEntityService {
             }
 
             conn.begin();
-
             // 3 Supprimer UNIQUEMENT dans la source interne
+            //Supprimer tous les triplets où l'entité est SUJET
+            //    ex: Jean Dupont → rico:name → "Jean"
             conn.remove(subject, null, null, CTX_INTERNAL);
+            //Supprimer tous les trilplets où l'entité est objet
+            //    ex: Photo-001 → rico:creator → Jean Dupont  ← on supprime ça aussi
+            conn.remove((Resource) null, null, subject, CTX_INTERNAL);
 
             // 4 Mettre à jour lastSync
             touchInternalDataSource(conn);
