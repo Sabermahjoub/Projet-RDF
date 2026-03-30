@@ -17,6 +17,8 @@ import { GestionRessourcesService } from '../../services/gestion-ressources.serv
 import { GestionProjetsComponent } from '../gestion-projets/gestion-projets.component';
 import { GestionProjetsService } from '../../services/gestion-projets.service';
 import { error } from 'console';
+
+import { OntologyManagerDialogComponent } from '../ontology-manager-dialog/ontology-manager-dialog.component';
 @Component({
   selector: 'app-gestion-ressources',
   standalone: true,
@@ -66,7 +68,16 @@ export class GestionRessourcesComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
+  openOntologyManagerDialog() {
+    this.dialog.open(OntologyManagerDialogComponent, {
+      width: '1500px'
+    });
+  }
+
   ngOnInit() {
+    
+
+
     // this.filteredEntities = [...this.allEntities];
     // this.filteredEntityTypes = [...this.entityTypes];
     // this.updateEntityTypeCounts();
