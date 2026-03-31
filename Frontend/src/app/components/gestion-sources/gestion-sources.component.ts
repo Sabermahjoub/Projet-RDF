@@ -20,7 +20,6 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Router } from '@angular/router';
 //import { MatMenuModule } from '@angular/material/menu';
  
 @Component({
@@ -71,8 +70,7 @@ export class GestionSourcesComponent implements OnInit, OnDestroy {
     private dataSourceService: DataSourceHttpService,
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog,
-      public router: Router  
+    private dialog: MatDialog
   ) {
     // Création du formulaire
     this.dataSourceForm = this.fb.group({
