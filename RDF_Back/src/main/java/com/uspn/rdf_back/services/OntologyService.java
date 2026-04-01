@@ -13,18 +13,13 @@ import java.util.List;
 @Service
 public class OntologyService {
 
-    // =============================
-    // TYPES RDF
-    // =============================
     public List<String> getAllTypes() {
 
-        String query = """
-        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-
-        SELECT DISTINCT ?type WHERE {
-            ?s rdf:type ?type .
-        }
-        """;
+        String query =
+                "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
+                        "SELECT DISTINCT ?type WHERE { " +
+                        "    ?s rdf:type ?type . " +
+                        "}";
 
         List<String> types = new ArrayList<>();
 
@@ -34,7 +29,6 @@ public class OntologyService {
             TupleQuery tupleQuery = conn.prepareTupleQuery(query);
 
             try (TupleQueryResult result = tupleQuery.evaluate()) {
-
                 while (result.hasNext()) {
                     BindingSet binding = result.next();
                     Value type = binding.getValue("type");
@@ -46,16 +40,13 @@ public class OntologyService {
         return types;
     }
 
-    // =============================
-    // PROPRIETES D'UN TYPE
-    // =============================
     public List<String> getPropertiesOfType(String type) {
 
         String query =
                 "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
                         "SELECT DISTINCT ?p WHERE { " +
-                        " ?s rdf:type <" + type + "> . " +
-                        " ?s ?p ?o . " +
+                        "    ?s rdf:type <" + type + "> . " +
+                        "    ?s ?p ?o . " +
                         "}";
 
         List<String> properties = new ArrayList<>();
@@ -66,7 +57,6 @@ public class OntologyService {
             TupleQuery tupleQuery = conn.prepareTupleQuery(query);
 
             try (TupleQueryResult result = tupleQuery.evaluate()) {
-
                 while (result.hasNext()) {
                     BindingSet binding = result.next();
                     properties.add(binding.getValue("p").stringValue());
@@ -77,15 +67,12 @@ public class OntologyService {
         return properties;
     }
 
-    // =============================
-    // RESSOURCES D'UN TYPE
-    // =============================
     public List<String> getResourcesOfType(String type) {
 
         String query =
                 "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " +
                         "SELECT DISTINCT ?s WHERE { " +
-                        " ?s rdf:type <" + type + "> . " +
+                        "    ?s rdf:type <" + type + "> . " +
                         "}";
 
         List<String> resources = new ArrayList<>();
@@ -96,7 +83,6 @@ public class OntologyService {
             TupleQuery tupleQuery = conn.prepareTupleQuery(query);
 
             try (TupleQueryResult result = tupleQuery.evaluate()) {
-
                 while (result.hasNext()) {
                     BindingSet binding = result.next();
                     resources.add(binding.getValue("s").stringValue());
